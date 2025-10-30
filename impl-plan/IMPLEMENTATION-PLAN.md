@@ -581,6 +581,77 @@ This implementation plan provides a complete, sequential todo list derived from 
 
 ---
 
+## MILESTONE 3: Enhanced Features (P1 Improvements)
+
+### Phase 1: Keyboard Shortcuts Implementation (2-3 hours) ✅ COMPLETED
+
+- [x] Create useKeyboardShortcuts custom hook
+  - File: `src/lib/use-keyboard-shortcuts.ts`
+  - Implement generic keyboard shortcut handler with modifiers support
+  - Add KeyboardShortcut interface for type safety
+  - Prevent shortcuts in input fields
+  - Add getShortcutLabel utility function
+
+- [x] Create KeyboardShortcutsHelp modal component
+  - File: `src/components/KeyboardShortcutsHelp.tsx`
+  - Modal overlay with backdrop
+  - Display all available shortcuts with formatted keys
+  - Styled with modern UI (rounded corners, shadows)
+  - Close button and click-outside-to-close functionality
+  - Responsive design for mobile devices
+
+- [x] Create KeyboardShortcutsIndicator button
+  - File: `src/components/KeyboardShortcutsIndicator.tsx`
+  - Floating '?' button in bottom-right corner
+  - Hover animations and visual feedback
+  - 44x44px touch target for mobile
+  - z-index 1000 to stay above map
+
+- [x] Integrate keyboard shortcuts into MapContainer
+  - Add MapController component to expose map instance
+  - Implement keyboard shortcut handlers:
+    - '?' - Toggle help modal
+    - 'r' - Reset map view to initial position (NYC, zoom 10)
+    - 'i' - Toggle cell info display visibility
+    - 'Esc' - Close help modal
+  - Add state management for help visibility and cell info toggle
+  - Use useRef for map instance access
+
+- [x] Test keyboard shortcuts functionality
+  - Verify '?' opens help modal
+  - Verify 'r' resets map view with smooth animation
+  - Verify 'i' toggles cell info display
+  - Verify 'Esc' closes help modal
+  - Test that shortcuts don't trigger in input fields
+  - Verify indicator button click opens help
+
+### Milestone 3 Completion Checklist ✅ COMPLETE
+
+**Functionality:**
+- [x] Keyboard shortcuts hook implemented
+- [x] Help modal displays all shortcuts
+- [x] Visual indicator button visible and functional
+- [x] Reset view shortcut works smoothly
+- [x] Toggle info shortcut works correctly
+- [x] Help modal closes with Escape key
+- [x] No conflicts with existing functionality
+
+**Code Quality:**
+- [x] All components use TypeScript with strict types
+- [x] Components properly memoized for performance
+- [x] Event listeners cleaned up properly
+- [x] No console errors or warnings
+- [x] Code is clean and well-commented
+
+**User Experience:**
+- [x] Shortcuts are discoverable (help button visible)
+- [x] Help modal is clear and easy to read
+- [x] Animations are smooth
+- [x] Mobile-friendly (touch targets meet 44x44px minimum)
+- [x] Keyboard shortcuts improve power-user workflow
+
+---
+
 ## Production Readiness
 
 ### Pre-Deployment Checklist ✅ COMPLETE
@@ -735,10 +806,11 @@ npm run perf:analyze # Analyze bundle size (add script first)
 
 Mark tasks as completed by changing `[ ]` to `[x]`.
 
-**Current Status**: Milestone 2 COMPLETE ✅ - Ready for Production Deployment
+**Current Status**: Milestone 3 COMPLETE ✅ - Enhanced with P1 Features, Ready for Production Deployment
 
 **Milestone 1 Progress**: 8/8 phases complete ✅
-**Milestone 2 Progress**: 7/7 phases complete ✅ (All phases completed)
+**Milestone 2 Progress**: 7/7 phases complete ✅
+**Milestone 3 Progress**: 1/1 phases complete ✅ (P1 Enhancement: Keyboard Shortcuts)
 
 ---
 
@@ -769,6 +841,10 @@ Mark tasks as completed by changing `[ ]` to `[x]`.
 - Phase 7: Final Testing & Optimization (2-3 hours) - 6 tasks
 - Milestone 2 Completion Checklist - 19 items
 
+**Milestone 3: Enhanced Features - P1 Improvements (2-3 hours)**
+- Phase 1: Keyboard Shortcuts Implementation (2-3 hours) - 5 tasks
+- Milestone 3 Completion Checklist - 13 items
+
 **Production Readiness**
 - Pre-Deployment Checklist - 10 items
 - Deployment Steps - 8 items
@@ -789,9 +865,12 @@ npm install -D @types/leaflet@1.9.12
 - `src/components/Map/ZoomDisplay.tsx`
 - `src/components/CellInfoDisplay.tsx`
 - `src/components/ErrorBoundary.tsx`
+- `src/components/KeyboardShortcutsHelp.tsx`
+- `src/components/KeyboardShortcutsIndicator.tsx`
 - `src/lib/h3-utils.ts`
 - `src/lib/zoom-resolution-map.ts`
 - `src/lib/use-debounce.ts`
+- `src/lib/use-keyboard-shortcuts.ts`
 - `src/types/h3.types.ts`
 - `README.md`
 - `DEVELOPMENT.md`
@@ -806,8 +885,9 @@ npm install -D @types/leaflet@1.9.12
 ---
 
 **Last Updated**: 2025-10-30
-**Implementation Guide Version**: 1.0
+**Implementation Guide Version**: 1.1
 **Based on Tech Specs**: MASTER v1.0, MILESTONE-01 v1.2, MILESTONE-02 v1.2
+**Enhancements**: Milestone 3 - Keyboard Shortcuts (P1 Feature)
 
 ---
 
