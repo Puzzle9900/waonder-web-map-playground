@@ -135,7 +135,7 @@ CursorTracker.displayName = 'CursorTracker';
 export default function MapContainer() {
   const [zoom, setZoom] = useState(10);
   const [cursorPos, setCursorPos] = useState<{ lat: number; lng: number } | null>(null);
-  const [cellInfo, setCellInfo] = useState<{ h3Index: string; resolution: number } | null>(null);
+  const [cellInfo, setCellInfo] = useState<{ h3Index: string; resolution: number; boundary: [number, number][] } | null>(null);
   const [showCellInfo, setShowCellInfo] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
   const mapRef = useRef<Map | null>(null);
@@ -164,7 +164,8 @@ export default function MapContainer() {
     const info = getH3CellInfo(debouncedCursorPos.lat, debouncedCursorPos.lng, resolution);
     setCellInfo({
       h3Index: info.h3Index,
-      resolution: info.resolution
+      resolution: info.resolution,
+      boundary: info.boundary
     });
   }, [debouncedCursorPos, zoom]);
 
@@ -248,6 +249,8 @@ export default function MapContainer() {
           <CellInfoDisplay
             h3Index={cellInfo?.h3Index || null}
             resolution={cellInfo?.resolution || null}
+            boundary={cellInfo?.boundary || null}
+            cursorPosition={debouncedCursorPos}
           />
         )}
       </LeafletMap>

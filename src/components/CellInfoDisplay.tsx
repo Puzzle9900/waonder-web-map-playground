@@ -5,14 +5,19 @@ import { memo, useMemo, useState, useEffect } from 'react';
 interface CellInfoDisplayProps {
   h3Index: string | null;
   resolution: number | null;
+  boundary?: [number, number][] | null;
+  cursorPosition?: { lat: number; lng: number } | null;
 }
 
 function CellInfoDisplay({
   h3Index,
-  resolution
+  resolution,
+  boundary,
+  cursorPosition
 }: CellInfoDisplayProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [exported, setExported] = useState(false);
 
   // Update visibility state when data changes
   useEffect(() => {
@@ -40,6 +45,50 @@ function CellInfoDisplay({
     } catch (err) {
       console.error('Failed to copy:', err);
     }
+  };
+
+  // Handle export cell data as JSON
+  const handleExport = () => {
+    if (!h3Index || resolution === null) return;
+
+    // Build export data object
+    const exportData = {
+      h3Index,
+      resolution,
+      timestamp: new Date().toISOString(),
+      ...(cursorPosition && {
+        cursor: {
+          latitude: cursorPosition.lat,
+          longitude: cursorPosition.lng
+        }
+      }),
+      ...(boundary && {
+        boundary: boundary.map(([lat, lng]) => ({
+          latitude: lat,
+          longitude: lng
+        }))
+      })
+    };
+
+    // Create formatted JSON string
+    const jsonString = JSON.stringify(exportData, null, 2);
+
+    // Create blob and download
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `h3-cell-${h3Index}-${new Date().getTime()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    // Show success feedback
+    setExported(true);
+    setTimeout(() => {
+      setExported(false);
+    }, 2000);
   };
 
   // Memoize container style with dynamic positioning based on visibility
@@ -128,6 +177,26 @@ function CellInfoDisplay({
     backgroundColor: copied ? '#45a049' : '#1976D2'
   }), [copied]);
 
+  // Memoize export button style
+  const exportButtonStyle = useMemo(() => ({
+    marginTop: '8px',
+    padding: '8px 14px',
+    backgroundColor: exported ? '#4caf50' : '#757575',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '13px',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease, transform 0.1s ease',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontWeight: 500,
+    width: '100%'
+  }), [exported]);
+
+  const exportButtonHoverStyle = useMemo(() => ({
+    backgroundColor: exported ? '#45a049' : '#616161'
+  }), [exported]);
+
   if (!h3Index || resolution === null) return null;
 
   return (
@@ -159,6 +228,19 @@ function CellInfoDisplay({
           aria-label="Copy H3 index to clipboard"
         >
           {copied ? '✓ Copied!' : 'Copy H3 Index'}
+        </button>
+        <button
+          onClick={handleExport}
+          style={exportButtonStyle}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = exportButtonHoverStyle.backgroundColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = exported ? '#4caf50' : '#757575';
+          }}
+          aria-label="Export cell data as JSON"
+        >
+          {exported ? '✓ Exported!' : 'Export Cell Data'}
         </button>
       </div>
     </div>
