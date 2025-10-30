@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
 /**
@@ -55,19 +55,83 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
   }
 };
 
+/**
+ * Map tile layer configurations
+ */
+export interface TileLayerConfig {
+  url: string;
+  attribution: string;
+}
+
+export const TILE_LAYERS = {
+  light: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  },
+  dark: {
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  }
+};
+
 interface ThemeContextType {
   colorScheme: ColorScheme;
   setColorScheme: (scheme: ColorScheme) => void;
   cycleColorScheme: () => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+  tileLayer: TileLayerConfig;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 /**
- * Theme provider component
+ * Theme provider component with dark mode and localStorage persistence
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(COLOR_SCHEMES.blue);
+  // Initialize from localStorage or defaults
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('h3-color-scheme');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Object.values(COLOR_SCHEMES).find(s => s.name === parsed.name) || COLOR_SCHEMES.blue;
+      }
+    }
+    return COLOR_SCHEMES.blue;
+  });
+
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('h3-dark-mode');
+      if (saved !== null) {
+        return saved === 'true';
+      }
+      // Check system preference
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  // Persist color scheme to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('h3-color-scheme', JSON.stringify(colorScheme));
+    }
+  }, [colorScheme]);
+
+  // Persist dark mode to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('h3-dark-mode', String(isDarkMode));
+      // Update document class for global dark mode styling
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [isDarkMode]);
 
   const setColorScheme = useCallback((scheme: ColorScheme) => {
     setColorSchemeState(scheme);
@@ -80,8 +144,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setColorSchemeState(schemes[nextIndex]);
   }, [colorScheme]);
 
+  const toggleDarkMode = useCallback(() => {
+    setIsDarkMode(prev => !prev);
+  }, []);
+
+  const tileLayer = isDarkMode ? TILE_LAYERS.dark : TILE_LAYERS.light;
+
   return (
-    <ThemeContext.Provider value={{ colorScheme, setColorScheme, cycleColorScheme }}>
+    <ThemeContext.Provider value={{ colorScheme, setColorScheme, cycleColorScheme, isDarkMode, toggleDarkMode, tileLayer }}>
       {children}
     </ThemeContext.Provider>
   );

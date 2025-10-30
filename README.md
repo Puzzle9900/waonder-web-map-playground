@@ -15,6 +15,7 @@ Try the application live! Pan, zoom, and explore H3 hexagonal cells anywhere on 
 - **Interactive Map**: Pan and zoom through OpenStreetMap tiles
 - **Real-time H3 Visualization**: See hexagonal cells appear at your cursor position
 - **Grid Mode Visualization**: Display all H3 cells in the current viewport for comprehensive spatial analysis
+- **Dark Mode**: Toggle between light and dark themes with automatic map tile switching
 - **Dynamic Resolution**: Cell resolution automatically adjusts based on zoom level (0-15)
 - **Cell Information Display**: View H3 index hash and resolution for any location
 - **Color Scheme Customization**: Choose from 6 beautiful color themes for hexagon visualization
@@ -109,6 +110,7 @@ Enhance your workflow with these keyboard shortcuts:
 | `r` | Reset map view to initial position (New York City, zoom 10) |
 | `i` | Toggle cell information display visibility |
 | `c` | Cycle through color schemes (Blue, Purple, Green, Orange, Red, Teal) |
+| `d` | Toggle dark mode (switch between light and dark themes) |
 | `g` | Toggle grid mode (show all cells in viewport) |
 | `Esc` | Close help modal |
 
@@ -128,6 +130,26 @@ Personalize your visualization experience with 6 different color schemes:
 **How to change colors:**
 1. Press the `c` key to cycle through available color schemes
 2. Click color swatches in the cell information panel (right side)
+
+### Dark Mode
+
+Reduce eye strain and improve visibility in low-light environments with dark mode.
+
+**Features:**
+- **Automatic Map Tiles**: Switches from OpenStreetMap (light) to CartoDB Dark Matter (dark) tiles
+- **UI Theme**: All interface elements adapt to dark colors
+- **Persistent Preference**: Your theme choice is saved and remembered across sessions
+- **System Preference**: Automatically detects your system's dark mode preference on first load
+
+**How to toggle dark mode:**
+1. Press the `d` key on your keyboard
+2. Click the sun/moon button in the bottom-right corner of the map
+
+**Benefits:**
+- Better viewing experience in dimly lit environments
+- Reduced eye strain during extended use
+- Professional dark aesthetic for presentations
+- Improved battery life on OLED screens (mobile devices)
 
 ### Sharing Map Locations (URL State Persistence)
 

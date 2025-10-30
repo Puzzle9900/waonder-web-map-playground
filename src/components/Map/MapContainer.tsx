@@ -12,6 +12,7 @@ import CellInfoDisplay from '../CellInfoDisplay';
 import KeyboardShortcutsHelp from '../KeyboardShortcutsHelp';
 import KeyboardShortcutsIndicator from '../KeyboardShortcutsIndicator';
 import GridModeToggle from '../GridModeToggle';
+import DarkModeToggle from '../DarkModeToggle';
 import { getH3CellInfo } from '@/lib/h3-utils';
 import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
 import { useDebounce } from '@/lib/use-debounce';
@@ -158,7 +159,7 @@ export default function MapContainer() {
   const [showHelp, setShowHelp] = useState(false);
   const [isGridMode, setIsGridMode] = useState(false);
   const mapRef = useRef<Map | null>(null);
-  const { cycleColorScheme } = useTheme();
+  const { cycleColorScheme, tileLayer, toggleDarkMode } = useTheme();
 
   // Debounce cursor position updates to improve performance
   // Updates will be delayed by 100ms to reduce calculation frequency
@@ -225,6 +226,11 @@ export default function MapContainer() {
     cycleColorScheme();
   }, [cycleColorScheme]);
 
+  // Toggle dark mode
+  const handleToggleDarkMode = useCallback(() => {
+    toggleDarkMode();
+  }, [toggleDarkMode]);
+
   // Toggle grid mode
   const handleToggleGridMode = useCallback(() => {
     setIsGridMode(prev => !prev);
@@ -253,6 +259,11 @@ export default function MapContainer() {
       handler: handleCycleColorScheme
     },
     {
+      key: 'd',
+      description: 'Toggle dark mode',
+      handler: handleToggleDarkMode
+    },
+    {
       key: 'g',
       description: 'Toggle grid mode',
       handler: handleToggleGridMode
@@ -262,7 +273,7 @@ export default function MapContainer() {
       description: 'Close help dialog',
       handler: () => setShowHelp(false)
     }
-  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme, handleToggleGridMode]);
+  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme, handleToggleDarkMode, handleToggleGridMode]);
 
   // Enable keyboard shortcuts
   useKeyboardShortcuts(shortcuts);
@@ -280,8 +291,8 @@ export default function MapContainer() {
         touchZoom={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={tileLayer.attribution}
+          url={tileLayer.url}
           maxZoom={19}
         />
         <MapController onMapReady={handleMapReady} onZoomChange={setZoom} onMapMove={handleMapMove} />
@@ -298,6 +309,7 @@ export default function MapContainer() {
         )}
       </LeafletMap>
       <GridModeToggle isGridMode={isGridMode} onToggle={handleToggleGridMode} />
+      <DarkModeToggle />
       <KeyboardShortcutsIndicator onClick={handleToggleHelp} />
       <KeyboardShortcutsHelp
         shortcuts={shortcuts}
