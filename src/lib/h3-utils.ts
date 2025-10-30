@@ -224,3 +224,31 @@ export function getH3CellsInBounds(
 
   return cells;
 }
+
+/**
+ * Get H3 cells at multiple resolution levels for a geographic bounding box
+ * Useful for multi-resolution layer view
+ *
+ * @param bounds - Geographic bounding box { north, south, east, west }
+ * @param resolutions - Array of H3 resolutions to display (max 3 recommended)
+ * @returns Map of resolution to array of H3CellInfo
+ *
+ * @example
+ * const cellsByResolution = getMultiResolutionCells({
+ *   north: 40.8, south: 40.6, east: -73.9, west: -74.1
+ * }, [8, 9, 10]);
+ * // Returns: Map { 8 => [...], 9 => [...], 10 => [...] }
+ */
+export function getMultiResolutionCells(
+  bounds: { north: number; south: number; east: number; west: number },
+  resolutions: number[]
+): Map<number, H3CellInfo[]> {
+  const result = new Map<number, H3CellInfo[]>();
+
+  for (const resolution of resolutions) {
+    const cells = getH3CellsInBounds(bounds, resolution);
+    result.set(resolution, cells);
+  }
+
+  return result;
+}

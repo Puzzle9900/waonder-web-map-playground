@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, memo } from 'react';
 import { Polygon, Tooltip, useMap } from 'react-leaflet';
-import { getH3CellInfo, getH3CellsInBounds } from '@/lib/h3-utils';
+import { getH3CellInfo, getH3CellsInBounds, getMultiResolutionCells } from '@/lib/h3-utils';
 import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
 import { useTheme } from '@/lib/use-theme';
 import type { H3CellInfo } from '@/lib/h3-utils';
@@ -11,15 +11,18 @@ interface H3HexagonLayerProps {
   cursorPosition: { lat: number; lng: number } | null;
   zoom: number;
   isGridMode?: boolean;
+  isMultiResolution?: boolean;
 }
 
 function H3HexagonLayer({
   cursorPosition,
   zoom,
-  isGridMode = false
+  isGridMode = false,
+  isMultiResolution = false
 }: H3HexagonLayerProps) {
   const [cellInfo, setCellInfo] = useState<H3CellInfo | null>(null);
   const [gridCells, setGridCells] = useState<H3CellInfo[]>([]);
+  const [multiResCells, setMultiResCells] = useState<Map<number, H3CellInfo[]>>(new Map());
   const [isVisible, setIsVisible] = useState(false);
   const { colorScheme } = useTheme();
   const map = useMap();
@@ -55,6 +58,7 @@ function H3HexagonLayer({
   useEffect(() => {
     if (!isGridMode || !map) {
       setGridCells([]);
+      setMultiResCells(new Map());
       return;
     }
 
@@ -67,10 +71,34 @@ function H3HexagonLayer({
         west: bounds.getWest()
       };
 
-      // Limit grid mode to resolution 8 or lower to prevent performance issues
-      const maxResolution = Math.min(resolution, 8);
-      const cells = getH3CellsInBounds(boundsObj, maxResolution);
-      setGridCells(cells);
+      if (isMultiResolution) {
+        // Multi-resolution mode: show current resolution and +/- 1 levels
+        const maxResolution = Math.min(resolution, 8);
+        const resolutions: number[] = [];
+
+        // Add current resolution
+        resolutions.push(maxResolution);
+
+        // Add parent resolution (lower number = larger cells)
+        if (maxResolution > 0) {
+          resolutions.push(maxResolution - 1);
+        }
+
+        // Add child resolution (higher number = smaller cells)
+        if (maxResolution < 8) {
+          resolutions.push(maxResolution + 1);
+        }
+
+        const multiCells = getMultiResolutionCells(boundsObj, resolutions);
+        setMultiResCells(multiCells);
+        setGridCells([]); // Clear single-resolution cells
+      } else {
+        // Single resolution grid mode
+        const maxResolution = Math.min(resolution, 8);
+        const cells = getH3CellsInBounds(boundsObj, maxResolution);
+        setGridCells(cells);
+        setMultiResCells(new Map()); // Clear multi-resolution cells
+      }
       setIsVisible(true);
     };
 
@@ -85,7 +113,7 @@ function H3HexagonLayer({
       map.off('moveend', updateGridCells);
       map.off('zoomend', updateGridCells);
     };
-  }, [isGridMode, map, resolution]);
+  }, [isGridMode, isMultiResolution, map, resolution]);
 
   // Memoize path options with dynamic opacity based on visibility
   const pathOptions = useMemo(() => ({
@@ -100,7 +128,83 @@ function H3HexagonLayer({
     className: 'h3-hexagon-transition'
   }), [isVisible, colorScheme]);
 
-  // Render grid mode
+  // Helper function to get path options for a specific resolution
+  const getResolutionPathOptions = (res: number, currentRes: number) => {
+    // Base opacity on resolution relative to current zoom level
+    let opacity = 0.8;
+    let fillOpacity = 0.2;
+    let weight = 2.5;
+
+    if (res < currentRes) {
+      // Parent resolution (larger cells) - lighter/more transparent
+      opacity = 0.4;
+      fillOpacity = 0.05;
+      weight = 2;
+    } else if (res > currentRes) {
+      // Child resolution (smaller cells) - slightly more prominent
+      opacity = 0.6;
+      fillOpacity = 0.15;
+      weight = 2;
+    }
+
+    return {
+      color: colorScheme.color,
+      fillColor: colorScheme.fillColor,
+      weight,
+      opacity: isVisible ? opacity : 0,
+      fillOpacity: isVisible ? fillOpacity : 0,
+      lineCap: 'round' as const,
+      lineJoin: 'round' as const,
+      className: 'h3-hexagon-transition'
+    };
+  };
+
+  // Render multi-resolution grid mode
+  if (isGridMode && isMultiResolution && multiResCells.size > 0) {
+    const currentRes = Math.min(resolution, 8);
+    return (
+      <>
+        {Array.from(multiResCells.entries()).map(([res, cells]) => (
+          cells.map((cell) => (
+            <Polygon
+              key={`${res}-${cell.h3Index}`}
+              positions={cell.boundary}
+              pathOptions={getResolutionPathOptions(res, currentRes)}
+            >
+              <Tooltip permanent={false} direction="top" opacity={0.9}>
+                <div style={{
+                  fontSize: '12px',
+                  lineHeight: '1.5',
+                  padding: '4px'
+                }}>
+                  <div style={{ marginBottom: '4px' }}>
+                    <strong style={{ color: colorScheme.labelColor }}>Resolution:</strong> {cell.resolution}
+                    {res < currentRes && ' (parent)'}
+                    {res > currentRes && ' (child)'}
+                  </div>
+                  <div>
+                    <strong style={{ color: colorScheme.labelColor }}>H3 Index:</strong>
+                    <br />
+                    <code style={{
+                      fontSize: '11px',
+                      backgroundColor: '#f0f0f0',
+                      padding: '2px 4px',
+                      borderRadius: '3px',
+                      wordBreak: 'break-all'
+                    }}>
+                      {cell.h3Index}
+                    </code>
+                  </div>
+                </div>
+              </Tooltip>
+            </Polygon>
+          ))
+        ))}
+      </>
+    );
+  }
+
+  // Render single-resolution grid mode
   if (isGridMode) {
     if (gridCells.length === 0) return null;
 

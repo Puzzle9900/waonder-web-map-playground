@@ -15,6 +15,7 @@ import GridModeToggle from '../GridModeToggle';
 import DarkModeToggle from '../DarkModeToggle';
 import PerformanceMetrics from '../PerformanceMetrics';
 import PerformanceMetricsToggle from '../PerformanceMetricsToggle';
+import MultiResolutionToggle from '../MultiResolutionToggle';
 import { getH3CellInfo, getH3PerformanceStats } from '@/lib/h3-utils';
 import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
 import { useDebounce } from '@/lib/use-debounce';
@@ -160,6 +161,7 @@ export default function MapContainer() {
   const [showCellInfo, setShowCellInfo] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
   const [isGridMode, setIsGridMode] = useState(false);
+  const [isMultiResolution, setIsMultiResolution] = useState(false);
   const [showPerfMetrics, setShowPerfMetrics] = useState(false);
   const [perfStats, setPerfStats] = useState({ h3CalcTime: 0, cacheHitRate: 0 });
   const mapRef = useRef<Map | null>(null);
@@ -254,6 +256,11 @@ export default function MapContainer() {
     setShowPerfMetrics(prev => !prev);
   }, []);
 
+  // Toggle multi-resolution mode
+  const handleToggleMultiResolution = useCallback(() => {
+    setIsMultiResolution(prev => !prev);
+  }, []);
+
   // Configure keyboard shortcuts
   const shortcuts = useMemo<KeyboardShortcut[]>(() => [
     {
@@ -292,11 +299,16 @@ export default function MapContainer() {
       handler: handleTogglePerfMetrics
     },
     {
+      key: 'm',
+      description: 'Toggle multi-resolution view',
+      handler: handleToggleMultiResolution
+    },
+    {
       key: 'Escape',
       description: 'Close help dialog',
       handler: () => setShowHelp(false)
     }
-  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme, handleToggleDarkMode, handleToggleGridMode, handleTogglePerfMetrics]);
+  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme, handleToggleDarkMode, handleToggleGridMode, handleTogglePerfMetrics, handleToggleMultiResolution]);
 
   // Enable keyboard shortcuts
   useKeyboardShortcuts(shortcuts);
@@ -320,7 +332,12 @@ export default function MapContainer() {
         />
         <MapController onMapReady={handleMapReady} onZoomChange={setZoom} onMapMove={handleMapMove} />
         <CursorTracker onCursorMove={handleCursorMove} />
-        <H3HexagonLayer cursorPosition={debouncedCursorPos} zoom={zoom} isGridMode={isGridMode} />
+        <H3HexagonLayer
+          cursorPosition={debouncedCursorPos}
+          zoom={zoom}
+          isGridMode={isGridMode}
+          isMultiResolution={isMultiResolution}
+        />
         <ZoomDisplay zoom={zoom} />
         {showCellInfo && (
           <CellInfoDisplay
@@ -332,6 +349,9 @@ export default function MapContainer() {
         )}
       </LeafletMap>
       <GridModeToggle isGridMode={isGridMode} onToggle={handleToggleGridMode} />
+      {isGridMode && (
+        <MultiResolutionToggle isMultiResolution={isMultiResolution} onToggle={handleToggleMultiResolution} />
+      )}
       <DarkModeToggle />
       <PerformanceMetricsToggle isVisible={showPerfMetrics} onToggle={handleTogglePerfMetrics} />
       <KeyboardShortcutsIndicator onClick={handleToggleHelp} />
