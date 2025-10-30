@@ -4,6 +4,12 @@ Interactive web application for exploring Uber's H3 geospatial indexing system. 
 
 ![H3 Map Visualization](https://img.shields.io/badge/Next.js-15.1.3-black?logo=next.js) ![React](https://img.shields.io/badge/React-18.3-blue?logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript) ![H3](https://img.shields.io/badge/H3-4.1.0-orange)
 
+## 🌐 Live Demo
+
+**Production URL**: [https://waonder-web-map-playground.vercel.app](https://waonder-web-map-playground.vercel.app)
+
+Try the application live! Pan, zoom, and explore H3 hexagonal cells anywhere on Earth.
+
 ## Features
 
 - **Interactive Map**: Pan and zoom through OpenStreetMap tiles
