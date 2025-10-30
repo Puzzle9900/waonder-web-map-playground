@@ -11,6 +11,7 @@ import H3HexagonLayer from './H3HexagonLayer';
 import CellInfoDisplay from '../CellInfoDisplay';
 import KeyboardShortcutsHelp from '../KeyboardShortcutsHelp';
 import KeyboardShortcutsIndicator from '../KeyboardShortcutsIndicator';
+import GridModeToggle from '../GridModeToggle';
 import { getH3CellInfo } from '@/lib/h3-utils';
 import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
 import { useDebounce } from '@/lib/use-debounce';
@@ -155,6 +156,7 @@ export default function MapContainer() {
   const [cellInfo, setCellInfo] = useState<{ h3Index: string; resolution: number; boundary: [number, number][] } | null>(null);
   const [showCellInfo, setShowCellInfo] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
+  const [isGridMode, setIsGridMode] = useState(false);
   const mapRef = useRef<Map | null>(null);
   const { cycleColorScheme } = useTheme();
 
@@ -223,6 +225,11 @@ export default function MapContainer() {
     cycleColorScheme();
   }, [cycleColorScheme]);
 
+  // Toggle grid mode
+  const handleToggleGridMode = useCallback(() => {
+    setIsGridMode(prev => !prev);
+  }, []);
+
   // Configure keyboard shortcuts
   const shortcuts = useMemo<KeyboardShortcut[]>(() => [
     {
@@ -246,11 +253,16 @@ export default function MapContainer() {
       handler: handleCycleColorScheme
     },
     {
+      key: 'g',
+      description: 'Toggle grid mode',
+      handler: handleToggleGridMode
+    },
+    {
       key: 'Escape',
       description: 'Close help dialog',
       handler: () => setShowHelp(false)
     }
-  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme]);
+  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme, handleToggleGridMode]);
 
   // Enable keyboard shortcuts
   useKeyboardShortcuts(shortcuts);
@@ -274,7 +286,7 @@ export default function MapContainer() {
         />
         <MapController onMapReady={handleMapReady} onZoomChange={setZoom} onMapMove={handleMapMove} />
         <CursorTracker onCursorMove={handleCursorMove} />
-        <H3HexagonLayer cursorPosition={debouncedCursorPos} zoom={zoom} />
+        <H3HexagonLayer cursorPosition={debouncedCursorPos} zoom={zoom} isGridMode={isGridMode} />
         <ZoomDisplay zoom={zoom} />
         {showCellInfo && (
           <CellInfoDisplay
@@ -285,6 +297,7 @@ export default function MapContainer() {
           />
         )}
       </LeafletMap>
+      <GridModeToggle isGridMode={isGridMode} onToggle={handleToggleGridMode} />
       <KeyboardShortcutsIndicator onClick={handleToggleHelp} />
       <KeyboardShortcutsHelp
         shortcuts={shortcuts}

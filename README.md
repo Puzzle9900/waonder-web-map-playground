@@ -14,6 +14,7 @@ Try the application live! Pan, zoom, and explore H3 hexagonal cells anywhere on 
 
 - **Interactive Map**: Pan and zoom through OpenStreetMap tiles
 - **Real-time H3 Visualization**: See hexagonal cells appear at your cursor position
+- **Grid Mode Visualization**: Display all H3 cells in the current viewport for comprehensive spatial analysis
 - **Dynamic Resolution**: Cell resolution automatically adjusts based on zoom level (0-15)
 - **Cell Information Display**: View H3 index hash and resolution for any location
 - **Color Scheme Customization**: Choose from 6 beautiful color themes for hexagon visualization
@@ -71,6 +72,33 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 4. **Copy H3 index**: Tap the "Copy H3 Index" button to copy the cell index
 5. **Export cell data**: Tap the "Export Cell Data" button to download the cell information
 
+### Grid Mode Visualization
+
+Grid Mode displays all H3 hexagonal cells within the current map viewport, providing a comprehensive view of the spatial indexing system.
+
+**How to activate Grid Mode:**
+1. Press the `g` key on your keyboard
+2. Click the Grid Mode toggle button in the bottom-left corner of the map
+
+**Features:**
+- **Viewport Coverage**: All cells visible in the current map view are rendered
+- **Dynamic Updates**: Grid automatically updates as you pan or zoom the map
+- **Performance Optimized**: Limited to resolution 8 or lower to ensure smooth performance
+- **Interactive Tooltips**: Hover over any cell to see its H3 index and resolution
+- **Color Themes**: Grid cells respect your selected color scheme
+
+**Best Practices:**
+- Use Grid Mode at zoom levels 0-12 for optimal performance
+- Higher resolutions (13-15) are automatically disabled in grid mode to prevent performance issues
+- Grid Mode is ideal for understanding H3 cell distribution and coverage patterns
+- Switch back to single-cell mode for detailed exploration at higher resolutions
+
+**Use Cases:**
+- Visualizing H3 cell coverage across neighborhoods, cities, or regions
+- Understanding how H3 resolution affects cell size and density
+- Analyzing spatial patterns and hexagonal tiling
+- Educational demonstrations of the H3 indexing system
+
 ### Keyboard Shortcuts
 
 Enhance your workflow with these keyboard shortcuts:
@@ -81,6 +109,7 @@ Enhance your workflow with these keyboard shortcuts:
 | `r` | Reset map view to initial position (New York City, zoom 10) |
 | `i` | Toggle cell information display visibility |
 | `c` | Cycle through color schemes (Blue, Purple, Green, Orange, Red, Teal) |
+| `g` | Toggle grid mode (show all cells in viewport) |
 | `Esc` | Close help modal |
 
 **Tip**: Click the `?` button in the bottom-right corner to view available shortcuts at any time.
@@ -200,6 +229,8 @@ waonder-web-map-playground/
 │   │   │   ├── H3HexagonLayer.tsx         # H3 hexagon rendering
 │   │   │   └── ZoomDisplay.tsx            # Zoom level display
 │   │   ├── CellInfoDisplay.tsx            # Cell information panel
+│   │   ├── ColorSchemeSelector.tsx        # Color theme selector
+│   │   ├── GridModeToggle.tsx             # Grid mode toggle button
 │   │   ├── KeyboardShortcutsHelp.tsx      # Keyboard shortcuts modal
 │   │   ├── KeyboardShortcutsIndicator.tsx # Help button indicator
 │   │   └── ErrorBoundary.tsx              # Error handling
@@ -207,7 +238,9 @@ waonder-web-map-playground/
 │   │   ├── h3-utils.ts                    # H3 calculation helpers
 │   │   ├── zoom-resolution-map.ts         # Zoom to resolution mapping
 │   │   ├── use-debounce.ts                # Debounce hook
-│   │   └── use-keyboard-shortcuts.ts      # Keyboard shortcuts hook
+│   │   ├── use-keyboard-shortcuts.ts      # Keyboard shortcuts hook
+│   │   ├── use-theme.tsx                  # Theme context and hook
+│   │   └── use-url-state.ts               # URL state persistence hook
 │   └── types/
 │       └── h3.types.ts                    # TypeScript type definitions
 ├── public/                       # Static assets

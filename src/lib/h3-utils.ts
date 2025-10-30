@@ -112,3 +112,58 @@ export function isValidCoordinate(lat: number, lng: number): boolean {
 export function clearH3Cache(): void {
   cellCache.clear();
 }
+
+/**
+ * Get all H3 cells that cover a geographic bounding box
+ *
+ * @param bounds - Geographic bounding box { north, south, east, west }
+ * @param resolution - H3 resolution (0-15)
+ * @returns Array of H3CellInfo for all cells in the bounding box
+ *
+ * @example
+ * const cells = getH3CellsInBounds({
+ *   north: 40.8, south: 40.6, east: -73.9, west: -74.1
+ * }, 10);
+ * // Returns array of H3CellInfo objects covering the area
+ */
+export function getH3CellsInBounds(
+  bounds: { north: number; south: number; east: number; west: number },
+  resolution: number
+): H3CellInfo[] {
+  const cells: H3CellInfo[] = [];
+  const seenCells = new Set<string>();
+
+  // Calculate step size based on resolution
+  // Higher resolution = smaller cells = need more sample points
+  // This is an approximation - we sample the grid and get unique cells
+  const steps = Math.min(50, Math.max(10, Math.pow(2, resolution)));
+  const latStep = (bounds.north - bounds.south) / steps;
+  const lngStep = (bounds.east - bounds.west) / steps;
+
+  // Sample points across the bounding box
+  for (let lat = bounds.south; lat <= bounds.north; lat += latStep) {
+    for (let lng = bounds.west; lng <= bounds.east; lng += lngStep) {
+      try {
+        const h3Index = latLngToCell(lat, lng, resolution);
+
+        // Only add if we haven't seen this cell yet
+        if (!seenCells.has(h3Index)) {
+          seenCells.add(h3Index);
+          const boundary = cellToBoundary(h3Index);
+          const actualResolution = getResolution(h3Index);
+
+          cells.push({
+            h3Index,
+            resolution: actualResolution,
+            boundary: boundary as [number, number][]
+          });
+        }
+      } catch {
+        // Skip invalid coordinates (e.g., poles)
+        continue;
+      }
+    }
+  }
+
+  return cells;
+}
