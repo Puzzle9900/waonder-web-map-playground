@@ -10,6 +10,7 @@ Interactive web application for exploring Uber's H3 geospatial indexing system. 
 - **Real-time H3 Visualization**: See hexagonal cells appear at your cursor position
 - **Dynamic Resolution**: Cell resolution automatically adjusts based on zoom level (0-15)
 - **Cell Information Display**: View H3 index hash and resolution for any location
+- **Keyboard Shortcuts**: Quick access to key functions with intuitive keyboard commands
 - **Mobile Support**: Touch-optimized interface for mobile devices
 - **Performance Optimized**: Debounced updates and memoized calculations for smooth 60fps interaction
 - **Copy to Clipboard**: Easily copy H3 cell indexes with one click
@@ -58,6 +59,19 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 2. **View H3 cells**: Tap and hold any location to see the hexagonal cell
 3. **Cell persistence**: The hexagon remains visible for 2 seconds after lifting your finger
 4. **Copy H3 index**: Tap the "Copy" button to copy the cell index
+
+### Keyboard Shortcuts
+
+Enhance your workflow with these keyboard shortcuts:
+
+| Shortcut | Action |
+|----------|--------|
+| `?` | Show keyboard shortcuts help modal |
+| `r` | Reset map view to initial position (New York City, zoom 10) |
+| `i` | Toggle cell information display visibility |
+| `Esc` | Close help modal |
+
+**Tip**: Click the `?` button in the bottom-right corner to view available shortcuts at any time.
 
 ## H3 Resolution Mapping
 
@@ -108,17 +122,20 @@ waonder-web-map-playground/
 │   │   └── globals.css          # Global styles
 │   ├── components/
 │   │   ├── Map/
-│   │   │   ├── MapContainer.tsx      # Main map component
-│   │   │   ├── H3HexagonLayer.tsx    # H3 hexagon rendering
-│   │   │   └── ZoomDisplay.tsx       # Zoom level display
-│   │   ├── CellInfoDisplay.tsx       # Cell information panel
-│   │   └── ErrorBoundary.tsx         # Error handling
+│   │   │   ├── MapContainer.tsx           # Main map component
+│   │   │   ├── H3HexagonLayer.tsx         # H3 hexagon rendering
+│   │   │   └── ZoomDisplay.tsx            # Zoom level display
+│   │   ├── CellInfoDisplay.tsx            # Cell information panel
+│   │   ├── KeyboardShortcutsHelp.tsx      # Keyboard shortcuts modal
+│   │   ├── KeyboardShortcutsIndicator.tsx # Help button indicator
+│   │   └── ErrorBoundary.tsx              # Error handling
 │   ├── lib/
-│   │   ├── h3-utils.ts              # H3 calculation helpers
-│   │   ├── zoom-resolution-map.ts   # Zoom to resolution mapping
-│   │   └── use-debounce.ts          # Debounce hook
+│   │   ├── h3-utils.ts                    # H3 calculation helpers
+│   │   ├── zoom-resolution-map.ts         # Zoom to resolution mapping
+│   │   ├── use-debounce.ts                # Debounce hook
+│   │   └── use-keyboard-shortcuts.ts      # Keyboard shortcuts hook
 │   └── types/
-│       └── h3.types.ts              # TypeScript type definitions
+│       └── h3.types.ts                    # TypeScript type definitions
 ├── public/                       # Static assets
 ├── tech-specs/                   # Technical specifications
 ├── impl-plan/                    # Implementation plan
