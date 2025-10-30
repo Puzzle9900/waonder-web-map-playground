@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "perf:test": "node scripts/perf-test.js",
+    "perf:profile": "NODE_ENV=production next build --profile",
+    "perf:analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
     "h3-js": "^4.1.0",
