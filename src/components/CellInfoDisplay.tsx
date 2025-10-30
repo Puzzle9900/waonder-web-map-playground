@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useMemo, useState, useEffect } from 'react';
+import ColorSchemeSelector from './ColorSchemeSelector';
 
 interface CellInfoDisplayProps {
   h3Index: string | null;
@@ -242,6 +243,15 @@ function CellInfoDisplay({
         >
           {exported ? '✓ Exported!' : 'Export Cell Data'}
         </button>
+      </div>
+
+      {/* Color Scheme Section */}
+      <div style={{
+        padding: '16px 20px',
+        borderTop: '1px solid #e0e0e0',
+        backgroundColor: '#fafafa'
+      }}>
+        <ColorSchemeSelector />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, memo } from 'react';
 import { Polygon, Tooltip } from 'react-leaflet';
 import { getH3CellInfo } from '@/lib/h3-utils';
 import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
+import { useTheme } from '@/lib/use-theme';
 import type { H3CellInfo } from '@/lib/h3-utils';
 
 interface H3HexagonLayerProps {
@@ -17,6 +18,7 @@ function H3HexagonLayer({
 }: H3HexagonLayerProps) {
   const [cellInfo, setCellInfo] = useState<H3CellInfo | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const { colorScheme } = useTheme();
 
   // Memoize resolution calculation to avoid unnecessary recalculations
   const resolution = useMemo(() => getH3ResolutionForZoom(zoom), [zoom]);
@@ -44,8 +46,8 @@ function H3HexagonLayer({
 
   // Memoize path options with dynamic opacity based on visibility
   const pathOptions = useMemo(() => ({
-    color: '#2196F3', // Brighter blue for border
-    fillColor: '#64B5F6', // Lighter blue for fill
+    color: colorScheme.color,
+    fillColor: colorScheme.fillColor,
     weight: 2.5,
     opacity: isVisible ? 0.8 : 0,
     fillOpacity: isVisible ? 0.2 : 0,
@@ -53,7 +55,7 @@ function H3HexagonLayer({
     lineJoin: 'round' as const,
     // Smooth transition for opacity changes
     className: 'h3-hexagon-transition'
-  }), [isVisible]);
+  }), [isVisible, colorScheme]);
 
   if (!cellInfo) return null;
 
@@ -69,10 +71,10 @@ function H3HexagonLayer({
           padding: '4px'
         }}>
           <div style={{ marginBottom: '4px' }}>
-            <strong style={{ color: '#2196F3' }}>Resolution:</strong> {cellInfo.resolution}
+            <strong style={{ color: colorScheme.labelColor }}>Resolution:</strong> {cellInfo.resolution}
           </div>
           <div>
-            <strong style={{ color: '#2196F3' }}>H3 Index:</strong>
+            <strong style={{ color: colorScheme.labelColor }}>H3 Index:</strong>
             <br />
             <code style={{
               fontSize: '11px',

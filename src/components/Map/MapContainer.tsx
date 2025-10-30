@@ -15,6 +15,7 @@ import { getH3CellInfo } from '@/lib/h3-utils';
 import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
 import { useDebounce } from '@/lib/use-debounce';
 import { useKeyboardShortcuts, type KeyboardShortcut } from '@/lib/use-keyboard-shortcuts';
+import { useTheme } from '@/lib/use-theme';
 
 // MapController component to expose map instance to parent
 const MapController = memo(({
@@ -139,6 +140,7 @@ export default function MapContainer() {
   const [showCellInfo, setShowCellInfo] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
   const mapRef = useRef<Map | null>(null);
+  const { cycleColorScheme } = useTheme();
 
   // Debounce cursor position updates to improve performance
   // Updates will be delayed by 100ms to reduce calculation frequency
@@ -197,6 +199,11 @@ export default function MapContainer() {
     setShowHelp(prev => !prev);
   }, []);
 
+  // Cycle color scheme
+  const handleCycleColorScheme = useCallback(() => {
+    cycleColorScheme();
+  }, [cycleColorScheme]);
+
   // Configure keyboard shortcuts
   const shortcuts = useMemo<KeyboardShortcut[]>(() => [
     {
@@ -215,11 +222,16 @@ export default function MapContainer() {
       handler: handleToggleInfo
     },
     {
+      key: 'c',
+      description: 'Cycle color scheme',
+      handler: handleCycleColorScheme
+    },
+    {
       key: 'Escape',
       description: 'Close help dialog',
       handler: () => setShowHelp(false)
     }
-  ], [handleResetView, handleToggleInfo, handleToggleHelp]);
+  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme]);
 
   // Enable keyboard shortcuts
   useKeyboardShortcuts(shortcuts);

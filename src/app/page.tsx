@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { ThemeProvider } from '@/lib/use-theme';
 
 export default function Home() {
   // Next.js 15 fix: Wrap dynamic import in useMemo to prevent "Container already initialized" error
@@ -32,8 +33,10 @@ export default function Home() {
   ), []);
 
   return (
-    <ErrorBoundary>
-      <MapContainer />
-    </ErrorBoundary>
+    <ThemeProvider>
+      <ErrorBoundary>
+        <MapContainer />
+      </ErrorBoundary>
+    </ThemeProvider>
   );
 }
