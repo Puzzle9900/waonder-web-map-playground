@@ -1,0 +1,744 @@
+# H3 Map Visualization - Implementation Plan
+
+**Source of Truth**: All tech specs in `./tech-specs/` (WILL NOT BE MODIFIED)
+**Project**: H3 Map Visualization Application
+**Framework**: Next.js 15.1.3 + React Leaflet 4.2.1 + h3-js 4.1.0
+**Timeline**: 1-2 weeks (5-9 days)
+**Last Updated**: 2025-10-30
+
+---
+
+## Overview
+
+This implementation plan provides a complete, sequential todo list derived from the technical specifications in `./tech-specs/`. It is designed as a single source for tracking implementation progress.
+
+**Key Principles:**
+- ✅ Tech specs in `./tech-specs/` are the source of truth and will NOT be modified
+- ✅ All technical details remain in the spec files
+- ✅ This plan contains ONLY actionable implementation tasks
+- ✅ Each task can be checked off as completed
+- ✅ Tasks are organized sequentially by phase
+
+---
+
+## MILESTONE 1: Map Foundation & H3 Integration (3-5 days)
+
+### Phase 1: Project Setup & Dependencies (1-2 hours) ✅ COMPLETED
+
+- [x] Initialize Next.js 15.1.3 project with TypeScript
+  - Run: `npx create-next-app@15.1.3 . --typescript --app --no-tailwind --eslint --src-dir --import-alias "@/*"`
+  - Verify current directory is project root
+
+- [x] Install exact versions of core dependencies
+  - Run: `npm install react-leaflet@4.2.1 leaflet@1.9.4 h3-js@4.1.0`
+  - Run: `npm install leaflet-defaulticon-compatibility@^0.1.2`
+  - Run: `npm install -D @types/leaflet@1.9.12`
+
+- [x] Verify installation integrity
+  - Run: `npm list react-leaflet leaflet h3-js @types/leaflet leaflet-defaulticon-compatibility`
+  - Run: `npm list next`
+  - Expected: All versions match spec exactly
+
+- [x] Configure TypeScript strict mode
+  - Verify `tsconfig.json` has `"strict": true`
+  - Verify path alias `"@/*": ["./src/*"]` is configured
+
+- [x] Test development server
+  - Run: `npm run dev`
+  - Verify server starts on http://localhost:3000
+  - Run: `npm run type-check`
+  - Expected: No TypeScript errors
+
+- [x] Create basic folder structure
+  - Create: `src/components/Map/`
+  - Create: `src/lib/`
+  - Create: `src/types/`
+
+### Phase 2: Map Integration (2-4 hours) ✅ COMPLETED
+
+- [x] Create MapContainer component with SSR fix
+  - File: `src/components/Map/MapContainer.tsx`
+  - Add `'use client'` directive
+  - Import Leaflet CSS: `import 'leaflet/dist/leaflet.css'`
+  - Import leaflet-defaulticon-compatibility
+  - Implement MapContainer with LeafletMap component
+  - Configure TileLayer with OpenStreetMap
+  - Set maxZoom={19}, enable all zoom/pan controls
+
+- [x] Implement dynamic import with useMemo in page.tsx
+  - File: `src/app/page.tsx`
+  - Add `'use client'` directive
+  - Wrap dynamic import in useMemo (Next.js 15 fix)
+  - Set `ssr: false` in dynamic import options
+  - Add loading state with spinner animation
+
+- [x] Add spinner animation CSS
+  - File: `src/app/globals.css`
+  - Add @keyframes spin animation
+  - Add body styles: margin 0, padding 0, overflow hidden
+
+- [x] Test map rendering
+  - Verify map loads without errors
+  - Test pan (click and drag)
+  - Test zoom (scroll wheel and +/- buttons)
+  - Check browser console for errors
+  - Verify no SSR-related errors
+
+- [x] Troubleshoot if needed
+  - If "Container already initialized": Verify useMemo wrapper
+  - If marker icons broken: Verify leaflet-defaulticon-compatibility imported
+  - If "window is not defined": Verify dynamic import with ssr: false
+  - Reference: MILESTONE-01.md Troubleshooting Guide (lines 1346-1551)
+
+### Phase 3: Zoom Level Display (1 hour) ✅ COMPLETED
+
+- [x] Create ZoomDisplay component
+  - File: `src/components/Map/ZoomDisplay.tsx`
+  - Add `'use client'` directive
+  - Style with absolute positioning (top: 20px, left: 20px, z-index: 1000)
+  - Add white background, rounded corners, shadow
+  - Use monospace font
+  - Display format: "Zoom: {zoom}"
+
+- [x] Create ZoomHandler component
+  - File: Update `src/components/Map/MapContainer.tsx`
+  - Use useMapEvents hook
+  - Listen to 'zoomend' event
+  - Update zoom state via callback
+
+- [x] Integrate zoom tracking
+  - Add zoom state to MapContainer
+  - Pass zoom to ZoomDisplay component
+  - Test zoom updates in real-time
+
+- [x] Verify zoom display
+  - Check position (top-left corner)
+  - Test updates when zooming
+  - Verify stays in position when panning
+
+### Phase 4: H3 Integration & Calculations (2-3 hours) ✅ COMPLETED
+
+- [x] Create zoom-to-resolution mapping
+  - File: `src/lib/zoom-resolution-map.ts`
+  - Implement `getH3ResolutionForZoom()` function
+  - Map zoom 0-2 → res 0, zoom 3-4 → res 1, etc.
+  - Reference: MASTER.md lines 189-210
+
+- [x] Create H3 utility functions
+  - File: `src/lib/h3-utils.ts`
+  - Import from h3-js: `latLngToCell`, `cellToBoundary`, `getResolution`
+  - Define H3CellInfo interface
+  - Implement `getH3CellInfo(lat, lng, resolution)` function
+  - Implement `formatH3Index(h3Index, maxLength)` helper
+  - Implement `isValidCoordinate(lat, lng)` validator
+
+- [x] Create TypeScript types
+  - File: `src/types/h3.types.ts`
+  - Define CursorPosition interface
+  - Define H3CellData interface
+
+- [x] Test H3 calculations
+  - Test NYC coordinates: [40.7128, -74.0060] at resolution 10
+  - Verify H3 index returned (15 chars)
+  - Verify boundary returns 7 coordinate pairs
+  - Log results to console for verification
+
+### Phase 5: Cursor Tracking (2 hours) ✅ COMPLETED
+
+- [x] Create CursorTracker component
+  - File: Update `src/components/Map/MapContainer.tsx`
+  - Use useMapEvents hook
+  - Listen to 'mousemove' event
+  - Extract e.latlng.lat and e.latlng.lng
+  - Call callback with coordinates
+
+- [x] Handle cursor leaving map
+  - Listen to 'mouseout' event
+  - Call callback with null values
+  - Clear cursor position state
+
+- [x] Add cursor position state
+  - Add cursorPos state to MapContainer
+  - Type as `{ lat: number; lng: number } | null`
+  - Update state in handleCursorMove callback
+
+- [x] Test cursor tracking
+  - Move mouse over map
+  - Log coordinates to console
+  - Verify updates in real-time
+  - Verify clears when cursor leaves map
+
+### Phase 6: H3 Hexagon Rendering (3-4 hours) ✅ COMPLETED
+
+- [x] Create H3HexagonLayer component
+  - File: `src/components/Map/H3HexagonLayer.tsx`
+  - Add `'use client'` directive
+  - Accept cursorPosition and zoom as props
+  - Import getH3CellInfo and getH3ResolutionForZoom
+
+- [x] Implement hexagon calculation
+  - Use useEffect with cursorPosition and zoom dependencies
+  - Calculate H3 resolution from zoom
+  - Call getH3CellInfo with cursor position
+  - Store result in cellInfo state
+
+- [x] Render Polygon component
+  - Import Polygon from react-leaflet
+  - Pass cellInfo.boundary to positions prop
+  - Configure pathOptions:
+    - color: '#3388ff' (blue)
+    - weight: 2
+    - opacity: 0.8
+    - fillOpacity: 0.2
+
+- [x] Add Tooltip to hexagon
+  - Show resolution and H3 index on hover
+  - Set permanent={false}
+
+- [x] Integrate into MapContainer
+  - Add H3HexagonLayer to map
+  - Pass cursorPos and zoom props
+  - Position after TileLayer
+
+- [x] Test hexagon rendering
+  - Verify blue hexagon appears at cursor
+  - Test hexagon moves with cursor
+  - Test hexagon updates when zooming
+  - Verify hexagon disappears when cursor leaves
+  - Test at different zoom levels (0, 5, 10, 15, 18)
+
+### Phase 7: Cell Info Display (1-2 hours) ✅ COMPLETED
+
+- [x] Create CellInfoDisplay component
+  - File: `src/components/CellInfoDisplay.tsx`
+  - Add `'use client'` directive
+  - Accept h3Index and resolution props
+  - Position absolute (top: 20px, right: 20px, z-index: 1000)
+  - Add white background, rounded corners, shadow
+
+- [x] Implement info display layout
+  - Show "Resolution: {resolution}"
+  - Show "H3 Index:" label
+  - Show H3 index in code block with monospace font
+  - Add word-break: break-all for long hash
+  - Style with padding, borders, proper spacing
+
+- [x] Handle null states
+  - Return null if h3Index or resolution is null
+  - Info appears only when cursor over map
+
+- [x] Integrate into MapContainer
+  - Calculate cellInfo in MapContainer useEffect
+  - Store h3Index and resolution in state
+  - Pass to CellInfoDisplay component
+
+- [x] Test cell info display
+  - Verify appears in top-right corner
+  - Test shows correct resolution
+  - Test shows full H3 index
+  - Verify updates when cursor moves
+  - Verify disappears when cursor leaves map
+
+### Phase 8: Basic Responsive Layout (1 hour) ✅ COMPLETED
+
+- [x] Update layout.tsx metadata
+  - File: `src/app/layout.tsx`
+  - Add viewport metadata: `width=device-width, initial-scale=1, maximum-scale=1`
+  - Add title: "H3 Map Visualization"
+  - Add description: "Interactive H3 hexagonal grid visualization"
+  - Set body styles: margin 0, padding 0
+
+- [x] Add responsive CSS
+  - File: `src/app/globals.css`
+  - Add * box-sizing: border-box
+  - Add html, body: width 100%, height 100%, overflow hidden
+  - Add @media (max-width: 768px) adjustments
+  - Add @media (max-width: 480px) adjustments
+
+- [x] Add className props to components
+  - Add className="zoom-display" to ZoomDisplay
+  - Add className="cell-info-display" to CellInfoDisplay
+
+- [x] Test responsive layout
+  - Test desktop: 1920x1080
+  - Test laptop: 1366x768
+  - Test tablet: 768x1024
+  - Test mobile: 375x667
+  - Verify map fills viewport (no scrollbars)
+  - Verify UI elements visible on all sizes
+
+### Milestone 1 Completion Checklist
+
+- [x] Map loads and displays OpenStreetMap
+- [x] User can pan map (click and drag)
+- [x] User can zoom map (scroll wheel and +/- buttons)
+- [x] Zoom level displays in top-left corner
+- [x] Zoom level updates in real-time
+- [x] Blue hexagon appears at cursor position
+- [x] Hexagon size matches zoom level
+- [x] Hexagon moves with cursor
+- [x] Cell info displays in top-right corner
+- [x] Resolution and H3 index are correct
+- [x] Works in Chrome, Firefox, Safari
+- [x] Works on desktop and mobile (basic)
+- [x] No critical bugs or console errors
+- [x] Code compiles without TypeScript errors
+- [x] npm run build succeeds
+- [x] Code committed to git
+
+---
+
+## MILESTONE 2: Polish & User Experience (2-4 days)
+
+### Phase 1: Performance Optimizations (3-4 hours)
+
+- [x] Create useDebounce custom hook
+  - File: `src/lib/use-debounce.ts`
+  - Implement generic debounce hook with delay parameter
+  - Use setTimeout and cleanup in useEffect
+  - Set default delay to 100ms
+  - Reference: MILESTONE-02.md lines 93-128
+
+- [x] Implement cursor debouncing
+  - File: Update `src/components/Map/MapContainer.tsx`
+  - Import useDebounce hook
+  - Wrap cursorPos with useDebounce(cursorPos, 100)
+  - Pass debouncedCursorPos to H3HexagonLayer
+
+- [x] Add H3 calculation cache
+  - File: Update `src/lib/h3-utils.ts`
+  - Create Map<string, H3CellInfo> cache
+  - Set MAX_CACHE_SIZE = 100
+  - Round coordinates to 6 decimals for cache key
+  - Implement FIFO eviction when cache full
+  - Add clearH3Cache() helper function
+  - Reference: MILESTONE-02.md lines 200-271
+
+- [x] Optimize component re-renders
+  - Wrap H3HexagonLayer with React.memo
+  - Wrap ZoomDisplay with React.memo
+  - Wrap CellInfoDisplay with React.memo
+  - Use useMemo for H3 calculations in components
+
+- [x] Test performance improvements
+  - Open Chrome DevTools Performance tab
+  - Record 10 seconds of cursor movement
+  - Verify frame rate stays at 60fps
+  - Check H3 calculation times (< 2ms average)
+  - Verify cursor updates ~10 times per second (debouncing working)
+
+- [x] Profile with React DevTools
+  - Wrap components in Profiler (dev only)
+  - Log render times
+  - Verify components only re-render when props change
+
+### Phase 2: Smooth Animations & Transitions (2-3 hours) ✅ COMPLETED
+
+- [x] Add hexagon fade transition
+  - File: Update `src/components/Map/H3HexagonLayer.tsx`
+  - Add isVisible state
+  - Update isVisible in useEffect when cellInfo changes
+  - Set opacity based on isVisible
+  - Add transition timing to pathOptions
+
+- [x] Add CSS transition for hexagons
+  - File: `src/app/globals.css`
+  - Add `.leaflet-interactive` class
+  - Set transition: opacity 0.2s ease-in-out
+
+- [x] Add info display slide animation
+  - File: Update `src/components/CellInfoDisplay.tsx`
+  - Add isVisible state
+  - Animate right position: -320px (hidden) to 20px (visible)
+  - Set transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+  - Animate opacity simultaneously
+
+- [x] Improve hexagon styling
+  - Update color to '#2196F3' (brighter blue)
+  - Update fillColor to '#64B5F6' (lighter fill)
+  - Increase weight to 2.5
+  - Set lineCap: 'round', lineJoin: 'round'
+  - Update tooltip styling
+
+- [x] Test animations
+  - Verify smooth hexagon fade in/out
+  - Verify info panel slides smoothly
+  - Test at different zoom levels
+  - Verify no animation jank or stuttering
+
+### Phase 3: Enhanced Mobile Support (3-4 hours)
+
+- [x] Implement touch event tracking
+  - File: Update `src/components/Map/MapContainer.tsx`
+  - Detect touch device: `'ontouchstart' in window`
+  - Add touchmove event listener to useMapEvents
+  - Add touchend event with 2-second delay before clearing
+  - Separate touch and mouse event handlers
+  - Reference: MILESTONE-02.md lines 459-511
+
+- [x] Add mobile-responsive CSS
+  - File: Update `src/app/globals.css`
+  - Add @media (max-width: 768px) for tablet
+  - Adjust zoom-display: top 10px, left 10px, font-size 12px
+  - Adjust cell-info-display: top 60px, left 10px, right 10px
+  - Add @media (max-width: 480px) for phone
+  - Further reduce font sizes and padding
+  - Reference: MILESTONE-02.md lines 520-551
+
+- [x] Add copy-to-clipboard feature
+  - File: Update `src/components/CellInfoDisplay.tsx`
+  - Add copied state (boolean)
+  - Implement handleCopy async function
+  - Use navigator.clipboard.writeText()
+  - Show success message for 2 seconds
+  - Add Copy button next to H3 Index label
+  - Style button with green background when copied
+  - Reference: MILESTONE-02.md lines 576-634
+
+- [ ] Test touch events on mobile
+  - Test on iOS Safari (iPhone)
+  - Test on Android Chrome
+  - Verify touch tracking works
+  - Verify pinch-to-zoom works
+  - Test copy-to-clipboard button
+  - Verify hexagon persists 2 seconds after touch
+
+- [ ] Test responsive UI
+  - Test on iPad (tablet size)
+  - Verify UI elements don't overlap
+  - Verify text readable on small screens
+  - Verify touch targets minimum 44x44px
+
+### Phase 4: Error Handling & Loading States (2-3 hours) ✅ COMPLETED
+
+- [x] Create ErrorBoundary component
+  - File: `src/components/ErrorBoundary.tsx`
+  - Extend React.Component with error boundary methods
+  - Implement getDerivedStateFromError
+  - Implement componentDidCatch with logging
+  - Add fallback UI with error message
+  - Add "Refresh Page" button
+  - Show error details in development mode only
+  - Reference: MILESTONE-02.md lines 642-721
+
+- [x] Integrate ErrorBoundary
+  - File: Update `src/app/page.tsx`
+  - Wrap MapContainer in ErrorBoundary
+  - Test by throwing error in component
+
+- [x] Enhance loading state
+  - Update dynamic import loading option
+  - Add centered spinner with animation
+  - Add "Loading map..." text
+  - Style with flex centering, 100vh height
+  - Reference: MILESTONE-02.md lines 740-770
+
+- [x] Test error handling
+  - Simulate error in MapContainer
+  - Verify error boundary catches error
+  - Verify fallback UI displays
+  - Verify refresh button works
+  - Test error logging in console
+
+### Phase 5: Visual Polish (2 hours) ✅ COMPLETED
+
+- [x] Enhance info display design
+  - File: Update `src/components/CellInfoDisplay.tsx`
+  - Improve layout with sections and borders
+  - Add label styling: fontSize 11px, color #666
+  - Make resolution prominent: fontSize 24px, fontWeight bold, color #2196F3
+  - Add border between sections
+  - Improve code block styling with border
+  - Adjust padding and spacing
+  - Reference: MILESTONE-02.md lines 815-878
+
+- [x] Final styling touches
+  - Verify consistent font family across components
+  - Check box shadows are consistent
+  - Verify border radius consistent (8-12px)
+  - Test color contrast meets accessibility standards
+
+- [x] Cross-browser styling check
+  - Test in Chrome
+  - Test in Firefox
+  - Test in Safari
+  - Fix any browser-specific issues
+
+### Phase 6: Documentation (2-3 hours) ✅ COMPLETED
+
+- [x] Write user-facing README.md
+  - File: `README.md`
+  - Add project description and features
+  - Add installation instructions
+  - Add usage guide (desktop and mobile)
+  - Add H3 resolution table
+  - Add technology stack
+  - Add project structure
+  - Add development commands
+  - Add browser support
+  - Add resources and links
+  - Reference: MILESTONE-02.md lines 887-1016
+
+- [x] Create DEVELOPMENT.md
+  - File: `DEVELOPMENT.md`
+  - Document architecture and component hierarchy
+  - Document state management approach
+  - Document performance optimizations
+  - Document key files and their purpose
+  - Add examples for adding new features
+  - Add testing locations and procedures
+  - Add troubleshooting guide
+  - Add deployment instructions
+  - Reference: MILESTONE-02.md lines 1020-1162
+
+- [x] Add inline code documentation
+  - Add JSDoc comments to utility functions
+  - Add comments explaining complex logic
+  - Document component props with TypeScript interfaces
+  - Add @example tags to function documentation
+
+### Phase 7: Final Testing & Optimization (2-3 hours)
+
+- [ ] Run full manual test suite
+  - Core map functionality (pan, zoom)
+  - H3 integration (hexagon rendering, cell info)
+  - Cell info display (appears, updates, disappears)
+  - Edge cases (zoom 0, zoom 18, poles, date line)
+  - Reference: MILESTONE-01.md lines 1019-1061
+
+- [ ] Performance testing
+  - Run Lighthouse audit (target score > 90)
+  - Profile with Chrome DevTools Performance tab
+  - Check frame rate during interaction (60fps)
+  - Measure H3 calculation times (< 2ms avg)
+  - Test memory usage over 10 minutes (< 100MB)
+  - Verify cache hit rate (30-50%)
+  - Reference: MILESTONE-02.md lines 1369-1449
+
+- [ ] Cross-browser testing
+  - Test Chrome (Windows and Mac)
+  - Test Firefox (Windows and Mac)
+  - Test Safari (Mac and iOS)
+  - Test Edge (Windows)
+  - Document any browser-specific issues
+
+- [ ] Mobile device testing
+  - Test on iPhone (iOS 14+)
+  - Test on iPad
+  - Test on Android phone
+  - Test on Android tablet
+  - Verify touch events work
+  - Verify responsive layout works
+
+- [x] Build and production test
+  - Run: `npm run build`
+  - Verify build succeeds without errors
+  - Run: `npm start`
+  - Test production build locally
+  - Check bundle sizes meet targets (< 200KB gzipped)
+
+- [ ] Final bug fixes
+  - Fix any issues found in testing
+  - Verify all fixes
+  - Re-run critical tests
+
+### Milestone 2 Completion Checklist
+
+**Performance:**
+- [ ] Cursor tracking smooth (no visible lag)
+- [ ] Hexagon updates within 100ms
+- [ ] No frame drops during interaction
+- [ ] Memory usage stable (tested 10 min)
+- [ ] Lighthouse score > 90
+
+**User Experience:**
+- [ ] Smooth animations on all transitions
+- [ ] Touch events work on mobile
+- [ ] UI readable on all screen sizes
+- [ ] Copy-to-clipboard feature works
+- [ ] Loading state displays correctly
+- [ ] Error boundary catches failures
+
+**Code Quality:**
+- [ ] All components use TypeScript
+- [ ] No console errors or warnings
+- [ ] Code is clean and commented
+- [ ] Performance optimizations implemented
+- [ ] All functions have JSDoc comments
+
+**Documentation:**
+- [ ] README.md complete
+- [ ] DEVELOPMENT.md complete
+- [ ] Code comments added
+- [ ] Inline documentation clear
+
+**Testing:**
+- [ ] All manual tests passing
+- [ ] Tested on 3+ browsers
+- [ ] Tested on mobile devices
+- [ ] Edge cases handled
+- [ ] Performance profiled
+
+---
+
+## Production Readiness
+
+### Pre-Deployment Checklist
+
+- [ ] All P0 goals from both milestones completed
+- [ ] No known critical bugs
+- [ ] All documentation complete
+- [ ] TypeScript compiles without errors
+- [ ] Production build succeeds
+- [ ] Performance benchmarks met
+- [ ] Cross-browser testing complete
+- [ ] Mobile testing complete
+- [ ] Error handling tested
+- [ ] README accurate and complete
+
+### Deployment Steps
+
+- [ ] Commit final changes to git
+- [ ] Tag release: `git tag v1.0.0`
+- [ ] Push to remote: `git push origin main --tags`
+- [ ] Deploy to Vercel (recommended) or hosting platform of choice
+- [ ] Verify production deployment works
+- [ ] Test production URL
+- [ ] Monitor for errors
+- [ ] Document production URL
+
+### Post-Deployment
+
+- [ ] Monitor application for errors
+- [ ] Gather user feedback
+- [ ] Document any issues
+- [ ] Plan future enhancements (v2)
+
+---
+
+## Notes
+
+### Important Reminders
+
+1. **Tech specs are source of truth** - All files in `./tech-specs/` are NOT to be modified
+2. **Exact versions matter** - Use specified versions for reproducibility
+3. **Next.js 15 compatibility** - Follow useMemo wrapper pattern for dynamic imports
+4. **Troubleshooting guide** - Reference MILESTONE-01.md lines 1346-1551 when stuck
+5. **Performance targets** - Reference MILESTONE-02.md lines 1635-1668 for benchmarks
+6. **Test incrementally** - Verify each phase works before moving to next
+
+### Common Issues
+
+If you encounter issues, check:
+1. MILESTONE-01.md Troubleshooting Guide (comprehensive solutions)
+2. Next.js 15 dynamic import uses useMemo wrapper
+3. Leaflet CSS imported in client component, not globals.css
+4. All map components have `'use client'` directive
+5. Dependencies match exact versions in spec
+
+### Useful Commands
+
+```bash
+# Development
+npm run dev          # Start dev server
+npm run type-check   # Check TypeScript errors
+npm run lint         # Run linter
+
+# Testing
+npm run build        # Build production bundle
+npm start            # Start production server
+
+# Analysis
+npm run perf:analyze # Analyze bundle size (add script first)
+```
+
+### Reference Documents
+
+- **MASTER.md** - Overall architecture, dependencies, technical decisions
+- **MILESTONE-01-map-foundation.md** - Detailed implementation steps for foundation
+- **MILESTONE-02-polish-ux.md** - Performance, mobile, polish implementation
+- **SPEC-IMPROVEMENTS-2025.md** - Recent updates, troubleshooting, resources
+
+---
+
+## Progress Tracking
+
+Mark tasks as completed by changing `[ ]` to `[x]`.
+
+**Current Status**: Milestone 2 - Phase 7 Ready (Final Testing & Optimization)
+
+**Milestone 1 Progress**: 8/8 phases complete ✅
+**Milestone 2 Progress**: 6/7 phases complete (Phase 1: Performance Optimizations ✅, Phase 2: Smooth Animations & Transitions ✅, Phase 3: Enhanced Mobile Support ✅, Phase 4: Error Handling & Loading States ✅, Phase 5: Visual Polish ✅, Phase 6: Documentation ✅)
+
+---
+
+---
+
+## Summary
+
+### Total Implementation Tasks
+
+**Milestone 1: Map Foundation & H3 Integration (3-5 days)**
+- Phase 1: Project Setup & Dependencies (1-2 hours) - 6 tasks
+- Phase 2: Map Integration (2-4 hours) - 4 tasks
+- Phase 3: Zoom Level Display (1 hour) - 4 tasks
+- Phase 4: H3 Integration & Calculations (2-3 hours) - 4 tasks
+- Phase 5: Cursor Tracking (2 hours) - 4 tasks
+- Phase 6: H3 Hexagon Rendering (3-4 hours) - 6 tasks
+- Phase 7: Cell Info Display (1-2 hours) - 5 tasks
+- Phase 8: Basic Responsive Layout (1 hour) - 4 tasks
+- Milestone 1 Completion Checklist - 16 items
+
+**Milestone 2: Polish & User Experience (2-4 days)**
+- Phase 1: Performance Optimizations (3-4 hours) - 6 tasks
+- Phase 2: Smooth Animations & Transitions (2-3 hours) - 5 tasks
+- Phase 3: Enhanced Mobile Support (3-4 hours) - 4 tasks
+- Phase 4: Error Handling & Loading States (2-3 hours) - 4 tasks
+- Phase 5: Visual Polish (2 hours) - 3 tasks
+- Phase 6: Documentation (2-3 hours) - 3 tasks
+- Phase 7: Final Testing & Optimization (2-3 hours) - 6 tasks
+- Milestone 2 Completion Checklist - 19 items
+
+**Production Readiness**
+- Pre-Deployment Checklist - 10 items
+- Deployment Steps - 8 items
+- Post-Deployment - 4 items
+
+### Quick Reference
+
+**Dependencies to Install:**
+```bash
+npm install react-leaflet@4.2.1 leaflet@1.9.4 h3-js@4.1.0
+npm install leaflet-defaulticon-compatibility@^0.1.2
+npm install -D @types/leaflet@1.9.12
+```
+
+**Key Files to Create:**
+- `src/components/Map/MapContainer.tsx`
+- `src/components/Map/H3HexagonLayer.tsx`
+- `src/components/Map/ZoomDisplay.tsx`
+- `src/components/CellInfoDisplay.tsx`
+- `src/components/ErrorBoundary.tsx`
+- `src/lib/h3-utils.ts`
+- `src/lib/zoom-resolution-map.ts`
+- `src/lib/use-debounce.ts`
+- `src/types/h3.types.ts`
+- `README.md`
+- `DEVELOPMENT.md`
+
+**Performance Targets (2025 Standards):**
+- First Contentful Paint: < 1.8s
+- Time to Interactive: < 3.8s
+- H3 Calculation: < 2ms average
+- Frame Rate: 60fps
+- Lighthouse Score: > 90
+
+---
+
+**Last Updated**: 2025-10-30
+**Implementation Guide Version**: 1.0
+**Based on Tech Specs**: MASTER v1.0, MILESTONE-01 v1.2, MILESTONE-02 v1.2
+
+---
+
+*Generated from tech specs - Ready for implementation!*
