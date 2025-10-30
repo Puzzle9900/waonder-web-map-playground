@@ -1,17 +1,45 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react';
 import { MapContainer as LeafletMap, TileLayer, useMapEvents } from 'react-leaflet';
-import type { LeafletEvent } from 'leaflet';
+import type { LeafletEvent, Map } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import ZoomDisplay from './ZoomDisplay';
 import H3HexagonLayer from './H3HexagonLayer';
 import CellInfoDisplay from '../CellInfoDisplay';
+import KeyboardShortcutsHelp from '../KeyboardShortcutsHelp';
+import KeyboardShortcutsIndicator from '../KeyboardShortcutsIndicator';
 import { getH3CellInfo } from '@/lib/h3-utils';
 import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
 import { useDebounce } from '@/lib/use-debounce';
+import { useKeyboardShortcuts, type KeyboardShortcut } from '@/lib/use-keyboard-shortcuts';
+
+// MapController component to expose map instance to parent
+const MapController = memo(({
+  onMapReady,
+  onZoomChange
+}: {
+  onMapReady: (map: Map) => void;
+  onZoomChange: (zoom: number) => void;
+}) => {
+  const map = useMapEvents({
+    zoomend: () => {
+      onZoomChange(map.getZoom());
+    },
+  });
+
+  // Expose map instance to parent on mount
+  useEffect(() => {
+    if (map) {
+      onMapReady(map);
+    }
+  }, [map, onMapReady]);
+
+  return null;
+});
+MapController.displayName = 'MapController';
 
 // Wrap ZoomHandler with memo since it doesn't need to re-render when parent re-renders
 const ZoomHandler = memo(({ onZoomChange }: { onZoomChange: (zoom: number) => void }) => {
@@ -108,6 +136,9 @@ export default function MapContainer() {
   const [zoom, setZoom] = useState(10);
   const [cursorPos, setCursorPos] = useState<{ lat: number; lng: number } | null>(null);
   const [cellInfo, setCellInfo] = useState<{ h3Index: string; resolution: number } | null>(null);
+  const [showCellInfo, setShowCellInfo] = useState(true);
+  const [showHelp, setShowHelp] = useState(false);
+  const mapRef = useRef<Map | null>(null);
 
   // Debounce cursor position updates to improve performance
   // Updates will be delayed by 100ms to reduce calculation frequency
@@ -143,30 +174,89 @@ export default function MapContainer() {
   // Memoize center coordinates
   const center = useMemo<[number, number]>(() => [40.7128, -74.0060], []); // NYC coordinates
 
+  // Handle map ready callback
+  const handleMapReady = useCallback((map: Map) => {
+    mapRef.current = map;
+  }, []);
+
+  // Reset map view to initial position
+  const handleResetView = useCallback(() => {
+    if (mapRef.current) {
+      mapRef.current.setView(center, 10, { animate: true });
+    }
+  }, [center]);
+
+  // Toggle cell info display
+  const handleToggleInfo = useCallback(() => {
+    setShowCellInfo(prev => !prev);
+  }, []);
+
+  // Toggle keyboard shortcuts help
+  const handleToggleHelp = useCallback(() => {
+    setShowHelp(prev => !prev);
+  }, []);
+
+  // Configure keyboard shortcuts
+  const shortcuts = useMemo<KeyboardShortcut[]>(() => [
+    {
+      key: '?',
+      description: 'Show keyboard shortcuts',
+      handler: handleToggleHelp
+    },
+    {
+      key: 'r',
+      description: 'Reset map to initial view',
+      handler: handleResetView
+    },
+    {
+      key: 'i',
+      description: 'Toggle cell info display',
+      handler: handleToggleInfo
+    },
+    {
+      key: 'Escape',
+      description: 'Close help dialog',
+      handler: () => setShowHelp(false)
+    }
+  ], [handleResetView, handleToggleInfo, handleToggleHelp]);
+
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts(shortcuts);
+
   return (
-    <LeafletMap
-      center={center}
-      zoom={10}
-      style={mapStyle}
-      zoomControl={true}
-      scrollWheelZoom={true}
-      dragging={true}
-      doubleClickZoom={true}
-      touchZoom={true}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        maxZoom={19}
+    <>
+      <LeafletMap
+        center={center}
+        zoom={10}
+        style={mapStyle}
+        zoomControl={true}
+        scrollWheelZoom={true}
+        dragging={true}
+        doubleClickZoom={true}
+        touchZoom={true}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+        />
+        <MapController onMapReady={handleMapReady} onZoomChange={setZoom} />
+        <CursorTracker onCursorMove={handleCursorMove} />
+        <H3HexagonLayer cursorPosition={debouncedCursorPos} zoom={zoom} />
+        <ZoomDisplay zoom={zoom} />
+        {showCellInfo && (
+          <CellInfoDisplay
+            h3Index={cellInfo?.h3Index || null}
+            resolution={cellInfo?.resolution || null}
+          />
+        )}
+      </LeafletMap>
+      <KeyboardShortcutsIndicator onClick={handleToggleHelp} />
+      <KeyboardShortcutsHelp
+        shortcuts={shortcuts}
+        isVisible={showHelp}
+        onClose={() => setShowHelp(false)}
       />
-      <ZoomHandler onZoomChange={setZoom} />
-      <CursorTracker onCursorMove={handleCursorMove} />
-      <H3HexagonLayer cursorPosition={debouncedCursorPos} zoom={zoom} />
-      <ZoomDisplay zoom={zoom} />
-      <CellInfoDisplay
-        h3Index={cellInfo?.h3Index || null}
-        resolution={cellInfo?.resolution || null}
-      />
-    </LeafletMap>
+    </>
   );
 }
