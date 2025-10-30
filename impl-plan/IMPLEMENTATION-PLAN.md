@@ -800,6 +800,69 @@ This implementation plan provides a complete, sequential todo list derived from 
 **Documentation:**
 - [x] Implementation plan updated with P1 feature
 - [x] Keyboard shortcuts include color cycling
+- [x] README.md updated with color scheme customization section
+
+---
+
+## MILESTONE 6: P2 Enhancements - URL State Persistence
+
+### Phase 1: URL State Persistence Feature (1-2 hours) ✅ COMPLETED
+
+- [x] Create useUrlState custom hook
+  - File: `src/lib/use-url-state.ts`
+  - Implement MapState interface
+  - Parse URL parameters (lat, lng, zoom)
+  - Validate coordinates and zoom level
+  - Provide updateState function for URL updates
+  - Round coordinates to 4 decimal places for clean URLs
+
+- [x] Update MapContainer to use URL state
+  - Import useUrlState hook
+  - Initialize map center and zoom from URL parameters
+  - Add handleMapMove callback to update URL on map movement
+  - Update MapController to trigger onMapMove on zoom/pan events
+  - Use router.replace to avoid polluting browser history
+
+- [x] Test URL state persistence
+  - Verify map loads with URL parameters
+  - Test URL updates when panning map
+  - Test URL updates when zooming
+  - Verify browser back/forward navigation works
+  - Test URL sharing (copy/paste URL works correctly)
+  - Verify default state when no URL parameters
+
+- [x] Build and verify
+  - TypeScript compiles without errors
+  - No linting warnings
+  - Production build succeeds
+  - Feature works in development mode
+
+### Milestone 6 Completion Checklist ✅ COMPLETE
+
+**Functionality:**
+- [x] useUrlState hook implemented
+- [x] Map initializes from URL parameters
+- [x] URL updates on map pan/zoom
+- [x] Coordinates rounded to 4 decimal places
+- [x] Invalid URL parameters fall back to defaults
+- [x] Browser history navigation works
+- [x] URL sharing works correctly
+
+**Code Quality:**
+- [x] TypeScript types properly defined
+- [x] No console errors or warnings
+- [x] No linting errors
+- [x] Build succeeds without errors
+- [x] Code follows existing patterns
+
+**User Experience:**
+- [x] Clean URLs (rounded coordinates)
+- [x] Shareable map locations
+- [x] No history pollution (uses replace)
+- [x] Graceful fallback to defaults
+
+**Documentation:**
+- [x] Implementation plan updated with P2 feature
 
 ---
 
@@ -961,13 +1024,14 @@ npm run perf:analyze # Analyze bundle size (add script first)
 
 Mark tasks as completed by changing `[ ]` to `[x]`.
 
-**Current Status**: 🎉 PROJECT COMPLETE ✅ - All milestones (1-5) complete, production deployed to Vercel, post-deployment monitoring complete, application healthy and ready for use (2025-10-30)
+**Current Status**: 🎉 PROJECT COMPLETE ✅ - All milestones (1-6) complete, production deployed to Vercel, post-deployment monitoring complete, application healthy and ready for use (2025-10-30)
 
 **Milestone 1 Progress**: 8/8 phases complete ✅
 **Milestone 2 Progress**: 7/7 phases complete ✅
 **Milestone 3 Progress**: 1/1 phases complete ✅ (P1 Enhancement: Keyboard Shortcuts)
 **Milestone 4 Progress**: 1/1 phases complete ✅ (P2 Enhancement: Export Cell Data)
 **Milestone 5 Progress**: 1/1 phases complete ✅ (P1 Enhancement: Color Scheme Customization)
+**Milestone 6 Progress**: 1/1 phases complete ✅ (P2 Enhancement: URL State Persistence)
 **Documentation**: README.md updated with all features ✅
 
 ---
@@ -1011,6 +1075,10 @@ Mark tasks as completed by changing `[ ]` to `[x]`.
 - Phase 1: Color Scheme Customization (1-2 hours) - 6 tasks
 - Milestone 5 Completion Checklist - 14 items
 
+**Milestone 6: P2 Enhancements - URL State Persistence (1-2 hours)**
+- Phase 1: URL State Persistence Feature (1-2 hours) - 4 tasks
+- Milestone 6 Completion Checklist - 12 items
+
 **Production Readiness**
 - Pre-Deployment Checklist - 10 items
 - Deployment Steps - 8 items
@@ -1039,6 +1107,7 @@ npm install -D @types/leaflet@1.9.12
 - `src/lib/use-debounce.ts`
 - `src/lib/use-keyboard-shortcuts.ts`
 - `src/lib/use-theme.tsx`
+- `src/lib/use-url-state.ts`
 - `src/types/h3.types.ts`
 - `README.md`
 - `DEVELOPMENT.md`
@@ -1053,12 +1122,13 @@ npm install -D @types/leaflet@1.9.12
 ---
 
 **Last Updated**: 2025-10-30
-**Implementation Guide Version**: 1.2
+**Implementation Guide Version**: 1.3
 **Based on Tech Specs**: MASTER v1.0, MILESTONE-01 v1.2, MILESTONE-02 v1.2
 **Enhancements**:
 - Milestone 3 - Keyboard Shortcuts (P1 Feature)
 - Milestone 4 - Export Cell Data (P2 Feature)
 - Milestone 5 - Color Scheme Customization (P1 Feature)
+- Milestone 6 - URL State Persistence (P2 Feature)
 
 ---
 

@@ -16,18 +16,31 @@ import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
 import { useDebounce } from '@/lib/use-debounce';
 import { useKeyboardShortcuts, type KeyboardShortcut } from '@/lib/use-keyboard-shortcuts';
 import { useTheme } from '@/lib/use-theme';
+import { useUrlState } from '@/lib/use-url-state';
 
 // MapController component to expose map instance to parent
 const MapController = memo(({
   onMapReady,
-  onZoomChange
+  onZoomChange,
+  onMapMove
 }: {
   onMapReady: (map: Map) => void;
   onZoomChange: (zoom: number) => void;
+  onMapMove?: (lat: number, lng: number, zoom: number) => void;
 }) => {
   const map = useMapEvents({
     zoomend: () => {
       onZoomChange(map.getZoom());
+      if (onMapMove) {
+        const center = map.getCenter();
+        onMapMove(center.lat, center.lng, map.getZoom());
+      }
+    },
+    moveend: () => {
+      if (onMapMove) {
+        const center = map.getCenter();
+        onMapMove(center.lat, center.lng, map.getZoom());
+      }
     },
   });
 
@@ -134,7 +147,10 @@ const CursorTracker = memo(({
 CursorTracker.displayName = 'CursorTracker';
 
 export default function MapContainer() {
-  const [zoom, setZoom] = useState(10);
+  // Get initial state from URL or use defaults
+  const { state: urlState, updateState: updateUrlState } = useUrlState();
+  const [zoom, setZoom] = useState(urlState.zoom);
+  const [center] = useState<[number, number]>([urlState.lat, urlState.lng]);
   const [cursorPos, setCursorPos] = useState<{ lat: number; lng: number } | null>(null);
   const [cellInfo, setCellInfo] = useState<{ h3Index: string; resolution: number; boundary: [number, number][] } | null>(null);
   const [showCellInfo, setShowCellInfo] = useState(true);
@@ -174,20 +190,23 @@ export default function MapContainer() {
   // Memoize map style to prevent unnecessary re-renders
   const mapStyle = useMemo(() => ({ width: '100%', height: '100vh' }), []);
 
-  // Memoize center coordinates
-  const center = useMemo<[number, number]>(() => [40.7128, -74.0060], []); // NYC coordinates
-
   // Handle map ready callback
   const handleMapReady = useCallback((map: Map) => {
     mapRef.current = map;
   }, []);
 
-  // Reset map view to initial position
+  // Handle map movement and update URL state
+  const handleMapMove = useCallback((lat: number, lng: number, zoom: number) => {
+    updateUrlState({ lat, lng, zoom });
+  }, [updateUrlState]);
+
+  // Reset map view to initial position (NYC)
   const handleResetView = useCallback(() => {
     if (mapRef.current) {
-      mapRef.current.setView(center, 10, { animate: true });
+      const defaultCenter: [number, number] = [40.7128, -74.0060];
+      mapRef.current.setView(defaultCenter, 10, { animate: true });
     }
-  }, [center]);
+  }, []);
 
   // Toggle cell info display
   const handleToggleInfo = useCallback(() => {
@@ -240,7 +259,7 @@ export default function MapContainer() {
     <>
       <LeafletMap
         center={center}
-        zoom={10}
+        zoom={zoom}
         style={mapStyle}
         zoomControl={true}
         scrollWheelZoom={true}
@@ -253,7 +272,7 @@ export default function MapContainer() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
         />
-        <MapController onMapReady={handleMapReady} onZoomChange={setZoom} />
+        <MapController onMapReady={handleMapReady} onZoomChange={setZoom} onMapMove={handleMapMove} />
         <CursorTracker onCursorMove={handleCursorMove} />
         <H3HexagonLayer cursorPosition={debouncedCursorPos} zoom={zoom} />
         <ZoomDisplay zoom={zoom} />

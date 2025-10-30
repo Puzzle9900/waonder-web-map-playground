@@ -16,7 +16,9 @@ Try the application live! Pan, zoom, and explore H3 hexagonal cells anywhere on 
 - **Real-time H3 Visualization**: See hexagonal cells appear at your cursor position
 - **Dynamic Resolution**: Cell resolution automatically adjusts based on zoom level (0-15)
 - **Cell Information Display**: View H3 index hash and resolution for any location
+- **Color Scheme Customization**: Choose from 6 beautiful color themes for hexagon visualization
 - **Export Cell Data**: Download complete cell information as JSON files
+- **URL State Persistence**: Share map locations via URL - coordinates and zoom level are preserved in the URL
 - **Keyboard Shortcuts**: Quick access to key functions with intuitive keyboard commands
 - **Mobile Support**: Touch-optimized interface for mobile devices
 - **Performance Optimized**: Debounced updates and memoized calculations for smooth 60fps interaction
@@ -78,9 +80,46 @@ Enhance your workflow with these keyboard shortcuts:
 | `?` | Show keyboard shortcuts help modal |
 | `r` | Reset map view to initial position (New York City, zoom 10) |
 | `i` | Toggle cell information display visibility |
+| `c` | Cycle through color schemes (Blue, Purple, Green, Orange, Red, Teal) |
 | `Esc` | Close help modal |
 
 **Tip**: Click the `?` button in the bottom-right corner to view available shortcuts at any time.
+
+### Color Scheme Customization
+
+Personalize your visualization experience with 6 different color schemes:
+
+- **Blue** (default) - Classic blue hexagons
+- **Purple** - Vibrant purple theme
+- **Green** - Nature-inspired green
+- **Orange** - Warm orange tones
+- **Red** - Bold red highlight
+- **Teal** - Cool teal/cyan
+
+**How to change colors:**
+1. Press the `c` key to cycle through available color schemes
+2. Click color swatches in the cell information panel (right side)
+
+### Sharing Map Locations (URL State Persistence)
+
+The application automatically saves your current map view (latitude, longitude, and zoom level) in the URL. This allows you to:
+
+**Share Locations:**
+- Copy the URL from your browser's address bar
+- Share it with others to show them the exact location and zoom level
+- Example: `https://waonder-web-map-playground.vercel.app?lat=51.5074&lng=-0.1278&zoom=12` (London)
+
+**Browser Navigation:**
+- Use browser back/forward buttons to navigate through map views
+- Bookmarks will save specific map locations
+- Refresh the page to return to the same view
+
+**URL Parameters:**
+- `lat` - Latitude (-90 to 90)
+- `lng` - Longitude (-180 to 180)
+- `zoom` - Zoom level (0 to 18)
+
+**Note**: Coordinates are rounded to 4 decimal places (~11m precision) for clean, shareable URLs.
 
 ### Exported Data Format
 
