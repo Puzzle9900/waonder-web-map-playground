@@ -598,14 +598,84 @@ This implementation plan provides a complete, sequential todo list derived from 
 
 ### Deployment Steps
 
+**📖 Complete deployment instructions available in `DEPLOYMENT.md`**
+
 - [x] Commit final changes to git
 - [x] Tag release: `git tag v1.0.0`
-- [ ] Push to remote: `git push origin main --tags` (No remote configured yet)
-- [ ] Deploy to Vercel (recommended) or hosting platform of choice
+- [ ] **MANUAL ACTION REQUIRED**: Push to remote repository
+
+  **Option 1: Create GitHub Repository (Recommended)**
+  ```bash
+  # 1. Create a new repository on GitHub (via web interface)
+  # 2. Add the remote to your local repository
+  git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+
+  # 3. Push code and tags to GitHub
+  git push -u origin main
+  git push origin --tags
+  ```
+
+  **Option 2: Use GitHub CLI**
+  ```bash
+  # 1. Install GitHub CLI if not already installed
+  # brew install gh  (on macOS)
+
+  # 2. Authenticate with GitHub
+  gh auth login
+
+  # 3. Create repository and push
+  gh repo create waonder-web-map-playground --public --source=. --remote=origin --push
+  git push origin --tags
+  ```
+
+- [ ] **MANUAL ACTION REQUIRED**: Deploy to Vercel
+
+  **Quick Deploy (Recommended)**
+  ```bash
+  # 1. Install Vercel CLI
+  npm install -g vercel
+
+  # 2. Login to Vercel
+  vercel login
+
+  # 3. Deploy to production
+  vercel --prod
+
+  # Follow the prompts:
+  # - Set up and deploy: Y
+  # - Which scope: [your account]
+  # - Link to existing project: N
+  # - Project name: waonder-web-map-playground
+  # - Directory: ./
+  # - Override settings: N
+  ```
+
+  **Alternative: Deploy via Vercel Dashboard**
+  1. Go to https://vercel.com/new
+  2. Import your GitHub repository
+  3. Vercel will auto-detect Next.js and configure build settings
+  4. Click "Deploy"
+
 - [ ] Verify production deployment works
+  - Check that the site loads
+  - Test map functionality (pan, zoom)
+  - Test H3 hexagon rendering
+  - Verify on mobile device
+
 - [ ] Test production URL
+  - Desktop browser testing (Chrome, Firefox, Safari)
+  - Mobile browser testing (iOS Safari, Chrome Android)
+  - Performance check with Lighthouse
+
 - [ ] Monitor for errors
+  - Check Vercel dashboard for deployment logs
+  - Monitor browser console for runtime errors
+  - Check Vercel Analytics (if enabled)
+
 - [ ] Document production URL
+  - Add URL to README.md
+  - Share with team/stakeholders
+  - Update documentation with live demo link
 
 ### Post-Deployment
 

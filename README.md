@@ -193,6 +193,15 @@ On mobile devices:
 2. Try refreshing the page
 3. Check that JavaScript is enabled
 
+## Deployment
+
+Ready to deploy this application? See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive deployment instructions including:
+
+- Pushing to GitHub
+- Deploying to Vercel
+- Custom domain setup
+- Monitoring and rollback procedures
+
 ## Contributing
 
 This is a demonstration project. For detailed development documentation, see [DEVELOPMENT.md](./DEVELOPMENT.md).
