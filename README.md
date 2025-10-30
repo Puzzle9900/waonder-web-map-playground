@@ -10,6 +10,7 @@ Interactive web application for exploring Uber's H3 geospatial indexing system. 
 - **Real-time H3 Visualization**: See hexagonal cells appear at your cursor position
 - **Dynamic Resolution**: Cell resolution automatically adjusts based on zoom level (0-15)
 - **Cell Information Display**: View H3 index hash and resolution for any location
+- **Export Cell Data**: Download complete cell information as JSON files
 - **Keyboard Shortcuts**: Quick access to key functions with intuitive keyboard commands
 - **Mobile Support**: Touch-optimized interface for mobile devices
 - **Performance Optimized**: Debounced updates and memoized calculations for smooth 60fps interaction
@@ -50,15 +51,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 1. **Navigate the map**: Click and drag to pan, scroll to zoom
 2. **View H3 cells**: Move your cursor over any location to see the hexagonal cell
 3. **Check cell info**: View the resolution and H3 index in the top-right panel
-4. **Copy H3 index**: Click the "Copy" button to copy the cell index to clipboard
-5. **Zoom levels**: The H3 resolution automatically adjusts as you zoom in/out
+4. **Copy H3 index**: Click the "Copy H3 Index" button to copy the cell index to clipboard
+5. **Export cell data**: Click the "Export Cell Data" button to download complete cell information as JSON
+6. **Zoom levels**: The H3 resolution automatically adjusts as you zoom in/out
 
 ### Mobile
 
 1. **Navigate the map**: Touch and drag to pan, pinch to zoom
 2. **View H3 cells**: Tap and hold any location to see the hexagonal cell
 3. **Cell persistence**: The hexagon remains visible for 2 seconds after lifting your finger
-4. **Copy H3 index**: Tap the "Copy" button to copy the cell index
+4. **Copy H3 index**: Tap the "Copy H3 Index" button to copy the cell index
+5. **Export cell data**: Tap the "Export Cell Data" button to download the cell information
 
 ### Keyboard Shortcuts
 
@@ -72,6 +75,32 @@ Enhance your workflow with these keyboard shortcuts:
 | `Esc` | Close help modal |
 
 **Tip**: Click the `?` button in the bottom-right corner to view available shortcuts at any time.
+
+### Exported Data Format
+
+When you export cell data, a JSON file is downloaded with the following structure:
+
+```json
+{
+  "h3Index": "8a2a100dac47fff",
+  "resolution": 10,
+  "timestamp": "2025-10-30T06:30:00.000Z",
+  "cursor": {
+    "latitude": 40.7128,
+    "longitude": -74.0060
+  },
+  "boundary": [
+    { "latitude": 40.713, "longitude": -74.007 },
+    { "latitude": 40.714, "longitude": -74.006 },
+    { "latitude": 40.713, "longitude": -74.005 },
+    { "latitude": 40.712, "longitude": -74.005 },
+    { "latitude": 40.711, "longitude": -74.006 },
+    { "latitude": 40.712, "longitude": -74.007 }
+  ]
+}
+```
+
+**File naming**: `h3-cell-{h3Index}-{timestamp}.json` (e.g., `h3-cell-8a2a100dac47fff-1730269800000.json`)
 
 ## H3 Resolution Mapping
 
