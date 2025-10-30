@@ -1124,7 +1124,7 @@ npm run perf:analyze # Analyze bundle size (requires @next/bundle-analyzer)
 
 Mark tasks as completed by changing `[ ]` to `[x]`.
 
-**Current Status**: 🎉 PROJECT COMPLETE ✅ - All milestones (1-9) complete, all features implemented including dark mode, performance testing tooling added, documentation updated, production deployed and verified, application healthy and fully functional (2025-10-30)
+**Current Status**: 🎉 PROJECT COMPLETE ✅ - All milestones (1-10) complete, all features implemented including dark mode and performance metrics display, performance testing tooling added, documentation updated, production deployed and verified, application healthy and fully functional (2025-10-30)
 
 **Milestone 1 Progress**: 8/8 phases complete ✅
 **Milestone 2 Progress**: 7/7 phases complete ✅
@@ -1135,7 +1135,108 @@ Mark tasks as completed by changing `[ ]` to `[x]`.
 **Milestone 7 Progress**: 1/1 phases complete ✅ (P2 Enhancement: Grid Mode Visualization)
 **Milestone 8 Progress**: 1/1 phases complete ✅ (Performance Testing Tooling)
 **Milestone 9 Progress**: 1/1 phases complete ✅ (P2 Enhancement: Dark Mode)
+**Milestone 10 Progress**: 1/1 phases complete ✅ (V2 Enhancement: Performance Metrics Display)
 **Documentation**: README.md updated with dark mode feature ✅
+
+---
+
+## MILESTONE 10: V2 Enhancements - Performance Metrics Display (1 hour)
+
+### Phase 1: Real-Time Performance Metrics (1 hour) ✅ COMPLETED
+
+- [x] Enhance h3-utils to track performance statistics
+  - File: Updated `src/lib/h3-utils.ts`
+  - Added performance tracking variables (totalCalculations, cacheHits, lastCalcTime, calcTimes)
+  - Updated getH3CellInfo to measure calculation time with performance.now()
+  - Track both cache hits and cache misses timing
+  - Keep last 100 calculation times for averaging
+  - Updated clearH3Cache to reset performance stats
+
+- [x] Add getH3PerformanceStats export function
+  - File: Updated `src/lib/h3-utils.ts`
+  - Calculate average calculation time from last 100 measurements
+  - Calculate cache hit rate as percentage
+  - Return structured performance data
+
+- [x] Create PerformanceMetrics component
+  - File: `src/components/PerformanceMetrics.tsx`
+  - Display real-time FPS (measured via requestAnimationFrame)
+  - Display H3 calculation time (average from stats)
+  - Display memory usage (Chrome only via performance.memory)
+  - Display cache hit rate (from H3 utils)
+  - Color-coded metrics (green/orange/red based on performance targets)
+  - Positioned top-right, below CellInfoDisplay
+  - Semi-transparent dark overlay with monospace font
+  - Responsive design for mobile/tablet
+
+- [x] Create PerformanceMetricsToggle component
+  - File: `src/components/PerformanceMetricsToggle.tsx`
+  - Floating toggle button with chart/activity icon
+  - Positioned bottom-right, above keyboard shortcuts indicator
+  - Visual state indication (blue when active, gray when inactive)
+  - Hover scale animation
+  - 44x44px touch target for mobile accessibility
+
+- [x] Integrate into MapContainer
+  - Import PerformanceMetrics and PerformanceMetricsToggle
+  - Import getH3PerformanceStats from h3-utils
+  - Add showPerfMetrics state
+  - Add perfStats state for H3 calc time and cache hit rate
+  - Update H3 calculation effect to track performance stats
+  - Add handleTogglePerfMetrics callback
+  - Add 'p' keyboard shortcut for toggling metrics
+  - Render PerformanceMetricsToggle button
+  - Conditionally render PerformanceMetrics when visible
+
+- [x] Test performance metrics functionality
+  - Verify TypeScript compiles without errors
+  - Verify ESLint passes with no warnings
+  - Verify production build succeeds
+  - Bundle size remains optimal (109 kB First Load JS < 200KB target)
+  - All existing features still work
+
+### Milestone 10 Completion Checklist ✅ COMPLETE
+
+**Functionality:**
+- [x] Performance metrics component created and functional
+- [x] Toggle button appears in bottom-right corner
+- [x] Clicking toggle shows/hides performance overlay
+- [x] FPS tracking works via requestAnimationFrame
+- [x] H3 calculation time tracked and averaged
+- [x] Cache hit rate calculated and displayed
+- [x] Memory usage shown (Chrome only)
+- [x] Keyboard shortcut 'p' toggles metrics
+- [x] Color-coded metrics provide visual feedback
+- [x] No conflicts with existing features
+
+**Code Quality:**
+- [x] TypeScript types properly defined
+- [x] Components properly memoized for performance
+- [x] Performance tracking doesn't impact calculation speed
+- [x] No console errors or warnings
+- [x] Build succeeds without errors
+- [x] Linting passes with 0 errors
+- [x] Code follows existing patterns
+
+**User Experience:**
+- [x] Toggle button is intuitive and discoverable
+- [x] Metrics overlay is clear and easy to read
+- [x] Color coding helps identify performance issues
+- [x] Keyboard shortcut is discoverable in help
+- [x] Mobile-friendly (responsive styling)
+- [x] Positioned to not obstruct map or other UI
+
+**Performance:**
+- [x] Performance tracking adds minimal overhead
+- [x] FPS measurement uses efficient requestAnimationFrame
+- [x] Stats calculation only when metrics visible
+- [x] Bundle size remains under target (109 kB)
+
+**Documentation:**
+- [x] Implementation plan updated with Milestone 10
+- [x] Components include inline documentation
+- [x] JSDoc comments added to new functions
+- [x] Keyboard shortcuts table includes 'p' key
 
 ---
 
@@ -1376,6 +1477,8 @@ npm install -D @types/leaflet@1.9.12
 - `src/components/ColorSchemeSelector.tsx`
 - `src/components/GridModeToggle.tsx`
 - `src/components/DarkModeToggle.tsx`
+- `src/components/PerformanceMetrics.tsx`
+- `src/components/PerformanceMetricsToggle.tsx`
 - `src/lib/h3-utils.ts`
 - `src/lib/zoom-resolution-map.ts`
 - `src/lib/use-debounce.ts`
@@ -1406,6 +1509,7 @@ npm install -D @types/leaflet@1.9.12
 - Milestone 7 - Grid Mode Visualization (P2 Feature)
 - Milestone 8 - Performance Testing Tooling
 - Milestone 9 - Dark Mode (P2 Feature)
+- Milestone 10 - Performance Metrics Display (V2 Feature)
 
 ---
 

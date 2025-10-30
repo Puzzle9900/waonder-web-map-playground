@@ -5,6 +5,12 @@ import { latLngToCell, cellToBoundary, getResolution } from 'h3-js';
 const cellCache = new Map<string, H3CellInfo>();
 const MAX_CACHE_SIZE = 100;
 
+// Performance tracking
+let totalCalculations = 0;
+let cacheHits = 0;
+let lastCalcTime = 0;
+const calcTimes: number[] = [];
+
 export interface H3CellInfo {
   h3Index: string;
   resolution: number;
@@ -43,6 +49,9 @@ export function getH3CellInfo(
   lng: number,
   resolution: number
 ): H3CellInfo {
+  const startTime = performance.now();
+  totalCalculations++;
+
   // Round to 6 decimals for cache key (~10cm precision)
   // This groups nearby coordinates into same cache entry
   // 6 decimals chosen to balance cache hits vs. precision
@@ -50,7 +59,16 @@ export function getH3CellInfo(
 
   // Check cache first
   if (cellCache.has(cacheKey)) {
-    return cellCache.get(cacheKey)!;
+    cacheHits++;
+    const result = cellCache.get(cacheKey)!;
+
+    // Track cache hit time (very fast)
+    const calcTime = performance.now() - startTime;
+    lastCalcTime = calcTime;
+    calcTimes.push(calcTime);
+    if (calcTimes.length > 100) calcTimes.shift(); // Keep last 100 measurements
+
+    return result;
   }
 
   // Cache miss - calculate H3 cell info
@@ -70,6 +88,12 @@ export function getH3CellInfo(
     // Boundary is already in [lat, lng] format - no transformation needed
     boundary: boundary as [number, number][]
   };
+
+  // Track calculation time
+  const calcTime = performance.now() - startTime;
+  lastCalcTime = calcTime;
+  calcTimes.push(calcTime);
+  if (calcTimes.length > 100) calcTimes.shift(); // Keep last 100 measurements
 
   // Simple FIFO eviction: remove oldest entry if cache is full
   if (cellCache.size >= MAX_CACHE_SIZE) {
@@ -111,6 +135,39 @@ export function isValidCoordinate(lat: number, lng: number): boolean {
  */
 export function clearH3Cache(): void {
   cellCache.clear();
+  totalCalculations = 0;
+  cacheHits = 0;
+  lastCalcTime = 0;
+  calcTimes.length = 0;
+}
+
+/**
+ * Get H3 calculation performance statistics
+ *
+ * @returns Performance stats including avg calc time and cache hit rate
+ *
+ * @example
+ * const stats = getH3PerformanceStats();
+ * // { avgCalcTime: 1.2, lastCalcTime: 0.8, cacheHitRate: 42.5 }
+ */
+export function getH3PerformanceStats(): {
+  avgCalcTime: number;
+  lastCalcTime: number;
+  cacheHitRate: number;
+} {
+  const avgCalcTime = calcTimes.length > 0
+    ? calcTimes.reduce((a, b) => a + b, 0) / calcTimes.length
+    : 0;
+
+  const cacheHitRate = totalCalculations > 0
+    ? (cacheHits / totalCalculations) * 100
+    : 0;
+
+  return {
+    avgCalcTime,
+    lastCalcTime,
+    cacheHitRate,
+  };
 }
 
 /**

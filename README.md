@@ -16,6 +16,7 @@ Try the application live! Pan, zoom, and explore H3 hexagonal cells anywhere on 
 - **Real-time H3 Visualization**: See hexagonal cells appear at your cursor position
 - **Grid Mode Visualization**: Display all H3 cells in the current viewport for comprehensive spatial analysis
 - **Dark Mode**: Toggle between light and dark themes with automatic map tile switching
+- **Performance Metrics Display**: Monitor real-time FPS, H3 calculation time, cache hit rate, and memory usage
 - **Dynamic Resolution**: Cell resolution automatically adjusts based on zoom level (0-15)
 - **Cell Information Display**: View H3 index hash and resolution for any location
 - **Color Scheme Customization**: Choose from 6 beautiful color themes for hexagon visualization
@@ -112,6 +113,7 @@ Enhance your workflow with these keyboard shortcuts:
 | `c` | Cycle through color schemes (Blue, Purple, Green, Orange, Red, Teal) |
 | `d` | Toggle dark mode (switch between light and dark themes) |
 | `g` | Toggle grid mode (show all cells in viewport) |
+| `p` | Toggle performance metrics overlay |
 | `Esc` | Close help modal |
 
 **Tip**: Click the `?` button in the bottom-right corner to view available shortcuts at any time.
@@ -150,6 +152,39 @@ Reduce eye strain and improve visibility in low-light environments with dark mod
 - Reduced eye strain during extended use
 - Professional dark aesthetic for presentations
 - Improved battery life on OLED screens (mobile devices)
+
+### Performance Metrics Display
+
+Monitor real-time application performance with the built-in performance metrics overlay.
+
+**Metrics Tracked:**
+- **FPS (Frames Per Second)**: Measures rendering performance (target: 60fps)
+  - 🟢 Green (55+ fps) - Excellent performance
+  - 🟠 Orange (45-54 fps) - Acceptable performance
+  - 🔴 Red (<45 fps) - Performance issues
+- **H3 Calculation Time**: Average time to calculate H3 cells (target: <2ms)
+  - 🟢 Green (≤2ms) - Excellent
+  - 🟠 Orange (2-5ms) - Acceptable
+  - 🔴 Red (>5ms) - Needs optimization
+- **Cache Hit Rate**: Efficiency of H3 calculation cache (target: 30-50%)
+  - 🟢 Green (≥30%) - Good cache performance
+  - 🟠 Orange (15-29%) - Acceptable
+  - 🔴 Red (<15%) - Poor cache efficiency
+- **Memory Usage**: JavaScript heap memory usage (Chrome only)
+  - Displays current memory consumption in MB
+
+**How to access Performance Metrics:**
+1. Press the `p` key on your keyboard
+2. Click the activity/chart button in the bottom-right corner of the map
+
+**Use Cases:**
+- Debugging performance issues
+- Monitoring application health
+- Optimizing for specific devices
+- Educational demonstrations of web app performance
+- Identifying performance bottlenecks during development
+
+**Note**: The performance metrics overlay is designed to have minimal impact on actual application performance.
 
 ### Sharing Map Locations (URL State Persistence)
 

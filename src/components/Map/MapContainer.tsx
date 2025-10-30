@@ -13,7 +13,9 @@ import KeyboardShortcutsHelp from '../KeyboardShortcutsHelp';
 import KeyboardShortcutsIndicator from '../KeyboardShortcutsIndicator';
 import GridModeToggle from '../GridModeToggle';
 import DarkModeToggle from '../DarkModeToggle';
-import { getH3CellInfo } from '@/lib/h3-utils';
+import PerformanceMetrics from '../PerformanceMetrics';
+import PerformanceMetricsToggle from '../PerformanceMetricsToggle';
+import { getH3CellInfo, getH3PerformanceStats } from '@/lib/h3-utils';
 import { getH3ResolutionForZoom } from '@/lib/zoom-resolution-map';
 import { useDebounce } from '@/lib/use-debounce';
 import { useKeyboardShortcuts, type KeyboardShortcut } from '@/lib/use-keyboard-shortcuts';
@@ -158,6 +160,8 @@ export default function MapContainer() {
   const [showCellInfo, setShowCellInfo] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
   const [isGridMode, setIsGridMode] = useState(false);
+  const [showPerfMetrics, setShowPerfMetrics] = useState(false);
+  const [perfStats, setPerfStats] = useState({ h3CalcTime: 0, cacheHitRate: 0 });
   const mapRef = useRef<Map | null>(null);
   const { cycleColorScheme, tileLayer, toggleDarkMode } = useTheme();
 
@@ -188,7 +192,16 @@ export default function MapContainer() {
       resolution: info.resolution,
       boundary: info.boundary
     });
-  }, [debouncedCursorPos, zoom]);
+
+    // Update performance stats if metrics are visible
+    if (showPerfMetrics) {
+      const stats = getH3PerformanceStats();
+      setPerfStats({
+        h3CalcTime: stats.avgCalcTime,
+        cacheHitRate: stats.cacheHitRate
+      });
+    }
+  }, [debouncedCursorPos, zoom, showPerfMetrics]);
 
   // Memoize map style to prevent unnecessary re-renders
   const mapStyle = useMemo(() => ({ width: '100%', height: '100vh' }), []);
@@ -236,6 +249,11 @@ export default function MapContainer() {
     setIsGridMode(prev => !prev);
   }, []);
 
+  // Toggle performance metrics
+  const handleTogglePerfMetrics = useCallback(() => {
+    setShowPerfMetrics(prev => !prev);
+  }, []);
+
   // Configure keyboard shortcuts
   const shortcuts = useMemo<KeyboardShortcut[]>(() => [
     {
@@ -269,11 +287,16 @@ export default function MapContainer() {
       handler: handleToggleGridMode
     },
     {
+      key: 'p',
+      description: 'Toggle performance metrics',
+      handler: handleTogglePerfMetrics
+    },
+    {
       key: 'Escape',
       description: 'Close help dialog',
       handler: () => setShowHelp(false)
     }
-  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme, handleToggleDarkMode, handleToggleGridMode]);
+  ], [handleResetView, handleToggleInfo, handleToggleHelp, handleCycleColorScheme, handleToggleDarkMode, handleToggleGridMode, handleTogglePerfMetrics]);
 
   // Enable keyboard shortcuts
   useKeyboardShortcuts(shortcuts);
@@ -310,7 +333,14 @@ export default function MapContainer() {
       </LeafletMap>
       <GridModeToggle isGridMode={isGridMode} onToggle={handleToggleGridMode} />
       <DarkModeToggle />
+      <PerformanceMetricsToggle isVisible={showPerfMetrics} onToggle={handleTogglePerfMetrics} />
       <KeyboardShortcutsIndicator onClick={handleToggleHelp} />
+      {showPerfMetrics && (
+        <PerformanceMetrics
+          h3CalcTime={perfStats.h3CalcTime}
+          cacheHitRate={perfStats.cacheHitRate}
+        />
+      )}
       <KeyboardShortcutsHelp
         shortcuts={shortcuts}
         isVisible={showHelp}
